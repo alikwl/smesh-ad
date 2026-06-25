@@ -193,8 +193,8 @@ import AdminLayout from '../layouts/AdminLayout.astro';
       try {
         const { data: contacts, error } = await supabase
           .from('contact_submissions')
-          .select('name, whatsapp, budget, submitted_at')
-          .order('submitted_at', { ascending: false })
+          .select('name, whatsapp, budget, created_at')
+          .order('created_at', { ascending: false })
           .limit(5);
 
         if (error) throw error;
@@ -209,8 +209,8 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         }
 
         tbody.innerHTML = contacts.map(c => {
-          const date = c.submitted_at 
-            ? new Date(c.submitted_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+          const date = c.created_at 
+            ? new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
             : 'N/A';
           return `
             <tr class="hover:bg-slate-50/50 transition-colors">

@@ -131,7 +131,7 @@ export async function getLeads() {
   const { data: contacts } = await supabase
     .from('contact_submissions')
     .select('*')
-    .order('submitted_at', { ascending: false });
+    .order('created_at', { ascending: false });
   return { leads, contacts };
 }
 

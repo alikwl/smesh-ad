@@ -221,11 +221,11 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         `;
       } else {
         contactsBody.innerHTML = contactsData.map(c => {
-          const date = c.submitted_at 
-            ? new Date(c.submitted_at).toLocaleString() 
+          const date = c.created_at 
+            ? new Date(c.created_at).toLocaleString() 
             : 'N/A';
           
-          const briefText = c.brief || '';
+          const briefText = c.message || '';
           const truncatedBrief = briefText.length > 50 
             ? briefText.substring(0, 47) + '...' 
             : briefText;
@@ -257,7 +257,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         
         // Find match in contacts array
         const match = contactsData.find(c => c.name === name && c.service === service);
-        const fullBrief = match ? match.brief : 'Brief details missing.';
+        const fullBrief = match ? match.message : 'Brief details missing.';
 
         if (modal && modalName && modalService && modalContent) {
           modalName.textContent = `Client Brief: ${name}`;
@@ -302,8 +302,8 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         csvContent = "Name,WhatsApp,Budget,Service,Submitted At,Brief\n" + 
           contactsData.map(c => {
             // Escape quotes inside fields
-            const cleanBrief = (c.brief || '').replace(/"/g, '""');
-            return `"${c.name || ''}","${c.whatsapp || ''}","${c.budget || ''}","${c.service || ''}","${c.submitted_at}","${cleanBrief}"`;
+            const cleanBrief = (c.message || '').replace(/"/g, '""');
+            return `"${c.name || ''}","${c.whatsapp || ''}","${c.budget || ''}","${c.service || ''}","${c.created_at}","${cleanBrief}"`;
           }).join("\n");
         filename = "contact_submissions_export.csv";
       }
