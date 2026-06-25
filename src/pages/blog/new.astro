@@ -1,0 +1,386 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="New Blog Post" activeSection="blog">
+  <div class="space-y-6 font-sans pb-24 relative">
+    
+    <!-- Top Nav Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Create Blog Post</h1>
+        <p class="text-xs text-slate-500 font-light mt-1">Author a new article blueprint.</p>
+      </div>
+    </div>
+
+    <!-- Main Editor Form -->
+    <form id="post-editor-form" class="space-y-6">
+      
+      <!-- Row 1: Title (Full width, large, 52px height) -->
+      <div class="space-y-1">
+        <label for="post-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Article Title</label>
+        <input 
+          type="text" 
+          id="post-title" 
+          required 
+          placeholder="Enter a catchy, value-driven title..." 
+          class="w-full h-[52px] px-5 rounded-2xl border border-slate-200 text-lg font-bold focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition shadow-xs"
+        />
+      </div>
+
+      <!-- Row 2: Slug & Category -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="post-slug" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">URL Slug</label>
+          <input 
+            type="text" 
+            id="post-slug" 
+            required 
+            placeholder="auto-generated-from-title" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="post-category" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</label>
+          <input 
+            type="text" 
+            id="post-category" 
+            required 
+            placeholder="e.g. Automation, Databases, Websites" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 3: SEO Title & SEO Description -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="post-seo-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SEO Title Tag (Google Search Headline)</label>
+          <input 
+            type="text" 
+            id="post-seo-title" 
+            placeholder="If left blank, defaults to Title" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="post-seo-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SEO Meta Description (Max 155 chars)</label>
+          <input 
+            type="text" 
+            id="post-seo-desc" 
+            placeholder="Brief summary of this article..." 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 4: Tags & Cover Image URL -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="post-tags" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tags (comma-separated)</label>
+          <input 
+            type="text" 
+            id="post-tags" 
+            placeholder="n8n, webhook, local-pos" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="post-cover" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Image URL</label>
+          <input 
+            type="text" 
+            id="post-cover" 
+            placeholder="/assets/images/blog/cover-file.webp" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 5: Excerpt -->
+      <div class="space-y-1">
+        <label for="post-excerpt" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Excerpt (Teaser paragraph - first 15% of the hook)</label>
+        <textarea 
+          id="post-excerpt" 
+          rows="2" 
+          placeholder="Write a compelling introductory summary..." 
+          class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+        ></textarea>
+      </div>
+
+      <!-- Row 6: Content Markdown Monospace Textarea -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label for="post-content" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Body Content (Markdown)</label>
+          
+          <!-- Live Preview Toggle -->
+          <button 
+            type="button" 
+            id="preview-toggle-btn"
+            class="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 hover:underline transition cursor-pointer"
+          >
+            Show Preview
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6" id="editor-preview-container">
+          <!-- Textarea area -->
+          <textarea 
+            id="post-content" 
+            rows="20" 
+            placeholder="# Introduction\nType markdown body here..." 
+            class="w-full p-5 rounded-2xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono leading-relaxed"
+          ></textarea>
+
+          <!-- Live HTML Preview Panel (Hidden by default) -->
+          <div 
+            id="preview-panel" 
+            class="hidden w-full p-6 bg-white border border-slate-200 rounded-2xl overflow-y-auto max-h-[500px] prose prose-sm content-body"
+          >
+            <p class="text-slate-400 italic text-xs">Nothing to preview yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- Success/Auto-saved Message indicator -->
+    <div class="flex items-center gap-2 text-[10px] text-slate-450 select-none font-medium h-4 justify-end">
+      <span id="autosave-indicator"></span>
+    </div>
+
+    <!-- Bottom Sticky Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 md:left-60 bg-white/90 backdrop-blur-md border-t border-slate-200/80 px-6 py-4 flex items-center justify-between z-40 shadow-lg">
+      <a 
+        href="/blog/" 
+        class="text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+      >
+        <i class="ti ti-arrow-left text-xs"></i> Back to Posts
+      </a>
+
+      <div class="flex items-center gap-3">
+        <!-- Save as Draft Button -->
+        <button 
+          type="button" 
+          id="draft-btn"
+          class="h-10 px-5 border border-slate-200 hover:border-slate-800 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+        >
+          Save as Draft
+        </button>
+
+        <!-- Save & Publish Button -->
+        <button 
+          type="button" 
+          id="publish-btn"
+          class="h-10 px-5 bg-[#1D9E75] hover:bg-[#0F6E56] text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm"
+        >
+          Save & Publish
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Toast Popups -->
+    <div 
+      id="save-toast" 
+      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold font-sans"
+    >
+      <i class="ti ti-check text-sm"></i>
+      <span>Saved!</span>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<!-- Load marked.js for Markdown parsing -->
+<script is:inline src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+  import { saveBlog, triggerDeploy } from '../../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // Inputs & Form Controls
+    const form = document.getElementById('post-editor-form') as HTMLFormElement | null;
+    const titleInput = document.getElementById('post-title') as HTMLInputElement | null;
+    const slugInput = document.getElementById('post-slug') as HTMLInputElement | null;
+    const categoryInput = document.getElementById('post-category') as HTMLInputElement | null;
+    const seoTitleInput = document.getElementById('post-seo-title') as HTMLInputElement | null;
+    const seoDescInput = document.getElementById('post-seo-desc') as HTMLInputElement | null;
+    const tagsInput = document.getElementById('post-tags') as HTMLInputElement | null;
+    const coverInput = document.getElementById('post-cover') as HTMLInputElement | null;
+    const excerptInput = document.getElementById('post-excerpt') as HTMLTextAreaElement | null;
+    const contentInput = document.getElementById('post-content') as HTMLTextAreaElement | null;
+
+    // Layout panels
+    const previewToggle = document.getElementById('preview-toggle-btn');
+    const container = document.getElementById('editor-preview-container');
+    const previewPanel = document.getElementById('preview-panel');
+    const toast = document.getElementById('save-toast');
+    const autosaveIndicator = document.getElementById('autosave-indicator');
+
+    // Action buttons
+    const draftBtn = document.getElementById('draft-btn') as HTMLButtonElement | null;
+    const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+
+    if (!form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel) return;
+
+    // 1. Slug auto-generation
+    let isSlugEdited = false;
+    slugInput.addEventListener('input', () => {
+      isSlugEdited = true;
+    });
+
+    titleInput.addEventListener('input', () => {
+      if (!isSlugEdited) {
+        slugInput.value = titleInput.value
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-');
+      }
+    });
+
+    // 2. Live Preview Panel Toggle
+    let isPreviewOn = false;
+    previewToggle?.addEventListener('click', () => {
+      isPreviewOn = !isPreviewOn;
+      if (isPreviewOn) {
+        previewToggle.textContent = 'Hide Preview';
+        previewPanel.classList.remove('hidden');
+        container.classList.remove('grid-cols-1');
+        container.classList.add('md:grid-cols-2');
+        updatePreview();
+      } else {
+        previewToggle.textContent = 'Show Preview';
+        previewPanel.classList.add('hidden');
+        container.classList.remove('md:grid-cols-2');
+        container.classList.add('grid-cols-1');
+      }
+    });
+
+    const updatePreview = () => {
+      if (!isPreviewOn || !previewPanel) return;
+      const markdownText = contentInput.value;
+      if (typeof (window as any).marked !== 'undefined') {
+        previewPanel.innerHTML = (window as any).marked.parse(markdownText || '');
+      } else {
+        previewPanel.textContent = markdownText;
+      }
+    };
+
+    contentInput.addEventListener('input', updatePreview);
+
+    // 3. Show Toast Feedback helper
+    const showToast = (msg = 'Saved!') => {
+      if (!toast) return;
+      const span = toast.querySelector('span');
+      if (span) span.textContent = msg;
+      
+      toast.classList.remove('opacity-0', 'translate-y-12', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+      }, 3000);
+    };
+
+    // 4. Save Blog Handler
+    let isSaving = false;
+    let savedId = ''; // Store returned UUID after first insert to support future updates
+
+    const savePost = async (publishState: boolean, silent = false) => {
+      if (isSaving) return;
+
+      const title = titleInput.value.trim();
+      const slug = slugInput.value.trim();
+
+      if (!title || !slug) {
+        if (!silent) alert('Title and Slug are required fields.');
+        return;
+      }
+
+      if (!silent) {
+        isSaving = true;
+        draftBtn.disabled = true;
+        publishBtn.disabled = true;
+      }
+
+      // Construct payload
+      const tags = (tagsInput?.value || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      const payload = {
+        title,
+        slug,
+        category: categoryInput?.value.trim() || 'Uncategorized',
+        seo_title: seoTitleInput?.value.trim() || title,
+        seo_description: seoDescInput?.value.trim() || excerptInput?.value.trim() || '',
+        tags,
+        cover_image: coverInput?.value.trim() || '',
+        excerpt: excerptInput?.value.trim() || '',
+        content: contentInput.value,
+        published: publishState,
+      };
+
+      try {
+        const { data, error } = await saveBlog(payload, savedId || undefined);
+        if (error) throw error;
+
+        // If newly created, save the ID returned by Supabase
+        if (data && data[0] && data[0].id) {
+          savedId = data[0].id;
+        }
+
+        if (!silent) {
+          showToast(publishState ? 'Published successfully!' : 'Saved as draft!');
+          
+          // Trigger build/deploy on changes if published
+          if (publishState) {
+            await triggerDeploy();
+          }
+
+          // Redirect back to list
+          setTimeout(() => {
+            window.location.href = '/blog/';
+          }, 1500);
+        } else {
+          // Auto-save feedback
+          const now = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (autosaveIndicator) {
+            autosaveIndicator.textContent = `Auto-saved at ${now}`;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to save post:', err);
+        if (!silent) {
+          alert('Failed to save: ' + err.message);
+        }
+      } finally {
+        if (!silent) {
+          isSaving = false;
+          draftBtn.disabled = false;
+          publishBtn.disabled = false;
+        }
+      }
+    };
+
+    // Action buttons listeners
+    draftBtn.addEventListener('click', () => savePost(false));
+    publishBtn.addEventListener('click', () => savePost(true));
+
+    // 5. 30-Seconds Auto-save runner
+    let lastContent = contentInput.value;
+    let lastTitle = titleInput.value;
+
+    setInterval(async () => {
+      // Check if changes have occurred
+      if (contentInput.value !== lastContent || titleInput.value !== lastTitle) {
+        lastContent = contentInput.value;
+        lastTitle = titleInput.value;
+        await savePost(false, true); // Save silently as draft
+      }
+    }, 30000);
+
+  });
+</script>

@@ -1,0 +1,454 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+export async function getStaticPaths() {
+  const { data } = await supabase
+    .from('portfolio')
+    .select('id');
+  
+  return (data || []).map((p) => ({
+    params: { id: p.id }
+  }));
+}
+
+const { id } = Astro.params;
+---
+
+<AdminLayout title="Edit Case Study" activeSection="portfolio">
+  <div class="space-y-6 font-sans pb-24 relative" id="edit-portfolio-root" data-id={id}>
+    
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Edit Case Study</h1>
+        <p class="text-xs text-slate-500 font-light mt-1">Modify your showcase project details.</p>
+      </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 space-y-3">
+      <svg class="animate-spin h-6 w-6 text-[#1D9E75] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-xs font-semibold">Retrieving case details...</p>
+    </div>
+
+    <!-- Form -->
+    <form id="portfolio-editor-form" class="hidden space-y-6">
+      
+      <!-- Row 1: Title -->
+      <div class="space-y-1">
+        <label for="p-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Case Study Title</label>
+        <input 
+          type="text" 
+          id="p-title" 
+          required 
+          placeholder="e.g. WhatsApp Order Bot for Local Shop" 
+          class="w-full h-[52px] px-5 rounded-2xl border border-slate-200 text-lg font-bold focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition shadow-xs"
+        />
+      </div>
+
+      <!-- Row 2: Slug & Client Type -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="p-slug" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">URL Slug</label>
+          <input 
+            type="text" 
+            id="p-slug" 
+            required 
+            placeholder="auto-generated-from-title" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="p-client-type" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Client Type / Deployment Category</label>
+          <input 
+            type="text" 
+            id="p-client-type" 
+            required 
+            placeholder="e.g. Automation, Websites, AI Chatbots" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 3: Outcome & Tech Stack -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="p-outcome" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Outcome (One-line business impact result)</label>
+          <input 
+            type="text" 
+            id="p-outcome" 
+            placeholder="e.g. Saved 15+ staff hours daily and processed 600+ orders" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="p-tech-stack" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tech Stack (comma-separated)</label>
+          <input 
+            type="text" 
+            id="p-tech-stack" 
+            placeholder="e.g. n8n, WhatsApp API, Google Sheets" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 4: Cover Image URL & Sort Order -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="p-cover" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Image URL</label>
+          <input 
+            type="text" 
+            id="p-cover" 
+            placeholder="/assets/images/portfolio/cover.webp" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="p-sort-order" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sort Order (numerical hierarchy)</label>
+          <input 
+            type="number" 
+            id="p-sort-order" 
+            value="0"
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 5: Description -->
+      <div class="space-y-1">
+        <label for="p-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Description (Brief project synopsis, max 155 chars)</label>
+        <textarea 
+          id="p-desc" 
+          rows="3" 
+          placeholder="Brief outline of client project..." 
+          class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+        ></textarea>
+      </div>
+
+      <!-- Row 6: Problem & Solution -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="p-problem" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">The Problem (What was the bottleneck? 2 rows)</label>
+          <textarea 
+            id="p-problem" 
+            rows="2" 
+            placeholder="Cashier spent 15 minutes typing invoices manually..." 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+        <div class="space-y-1">
+          <label for="p-solution" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">The Solution (How was it resolved? 2 rows)</label>
+          <textarea 
+            id="p-solution" 
+            rows="2" 
+            placeholder="Bespoke next.js POS with custom key bindings connected to Supabase..." 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Row 7: Content Monospace Area -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label for="p-content" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Full Case Study Details (Markdown)</label>
+          
+          <button 
+            type="button" 
+            id="preview-toggle-btn"
+            class="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 hover:underline transition cursor-pointer"
+          >
+            Show Preview
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6" id="editor-preview-container">
+          <textarea 
+            id="p-content" 
+            rows="20" 
+            placeholder="# Project Blueprint\nDescribe details here..." 
+            class="w-full p-5 rounded-2xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono leading-relaxed"
+          ></textarea>
+
+          <div 
+            id="preview-panel" 
+            class="hidden w-full p-6 bg-white border border-slate-200 rounded-2xl overflow-y-auto max-h-[500px] prose prose-sm content-body"
+          >
+            <p class="text-slate-400 italic text-xs">Nothing to preview yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="flex items-center gap-2 text-[10px] text-slate-450 select-none font-medium h-4 justify-end">
+      <span id="autosave-indicator"></span>
+    </div>
+
+    <!-- Bottom Sticky Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 md:left-60 bg-white/90 backdrop-blur-md border-t border-slate-200/80 px-6 py-4 flex items-center justify-between z-40 shadow-lg">
+      <a 
+        href="/portfolio/" 
+        class="text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+      >
+        <i class="ti ti-arrow-left text-xs"></i> Back to Portfolio
+      </a>
+
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          id="draft-btn"
+          class="h-10 px-5 border border-slate-200 hover:border-slate-800 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+        >
+          Save as Draft
+        </button>
+
+        <button 
+          type="button" 
+          id="publish-btn"
+          class="h-10 px-5 bg-[#1D9E75] hover:bg-[#0F6E56] text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm"
+        >
+          Save & Publish
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Popup -->
+    <div 
+      id="save-toast" 
+      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold font-sans"
+    >
+      <i class="ti ti-check text-sm"></i>
+      <span>Saved!</span>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+  import { getPortfolio, savePortfolio, triggerDeploy } from '../../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const root = document.getElementById('edit-portfolio-root');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const form = document.getElementById('portfolio-editor-form') as HTMLFormElement | null;
+    
+    const titleInput = document.getElementById('p-title') as HTMLInputElement | null;
+    const slugInput = document.getElementById('p-slug') as HTMLInputElement | null;
+    const clientTypeInput = document.getElementById('p-client-type') as HTMLInputElement | null;
+    const outcomeInput = document.getElementById('p-outcome') as HTMLInputElement | null;
+    const techStackInput = document.getElementById('p-tech-stack') as HTMLInputElement | null;
+    const coverInput = document.getElementById('p-cover') as HTMLInputElement | null;
+    const sortOrderInput = document.getElementById('p-sort-order') as HTMLInputElement | null;
+    
+    const descInput = document.getElementById('p-desc') as HTMLTextAreaElement | null;
+    const problemInput = document.getElementById('p-problem') as HTMLTextAreaElement | null;
+    const solutionInput = document.getElementById('p-solution') as HTMLTextAreaElement | null;
+    const contentInput = document.getElementById('p-content') as HTMLTextAreaElement | null;
+
+    const previewToggle = document.getElementById('preview-toggle-btn');
+    const container = document.getElementById('editor-preview-container');
+    const previewPanel = document.getElementById('preview-panel');
+    const toast = document.getElementById('save-toast');
+    const autosaveIndicator = document.getElementById('autosave-indicator');
+
+    const draftBtn = document.getElementById('draft-btn') as HTMLButtonElement | null;
+    const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+
+    if (!root || !form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel || !loadingOverlay) return;
+
+    const id = root.getAttribute('data-id') || '';
+
+    // 1. Fetch Existing Data
+    const loadData = async () => {
+      const { data: p, error } = await getPortfolio(id);
+      if (error || !p) {
+        console.error('Failed to load portfolio:', error);
+        loadingOverlay.innerHTML = `
+          <div class="text-rose-600 font-semibold bg-rose-50 border border-rose-100 py-4 px-6 rounded-xl inline-block">
+            Error: Failed to load portfolio details.
+          </div>
+        `;
+        return;
+      }
+
+      // Populate Form Fields
+      titleInput.value = p.title || '';
+      slugInput.value = p.slug || '';
+      clientTypeInput.value = p.client_type || '';
+      outcomeInput.value = p.outcome || '';
+      techStackInput.value = (p.tech_stack || []).join(', ');
+      coverInput.value = p.cover_image || '';
+      sortOrderInput.value = String(p.sort_order ?? 0);
+      descInput.value = p.description || '';
+      problemInput.value = p.problem || '';
+      solutionInput.value = p.solution || '';
+      contentInput.value = p.content || '';
+
+      // Reveal form
+      loadingOverlay.classList.add('hidden');
+      form.classList.remove('hidden');
+
+      // Initialize auto-save states
+      lastContent = contentInput.value;
+      lastTitle = titleInput.value;
+    };
+
+    // 2. Slug auto-generation guard
+    let isSlugEdited = true;
+    slugInput.addEventListener('input', () => {
+      isSlugEdited = true;
+    });
+
+    titleInput.addEventListener('input', () => {
+      if (!isSlugEdited || !slugInput.value) {
+        slugInput.value = titleInput.value
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-');
+      }
+    });
+
+    // 3. Live Preview
+    let isPreviewOn = false;
+    previewToggle?.addEventListener('click', () => {
+      isPreviewOn = !isPreviewOn;
+      if (isPreviewOn) {
+        previewToggle.textContent = 'Hide Preview';
+        previewPanel.classList.remove('hidden');
+        container.classList.remove('grid-cols-1');
+        container.classList.add('md:grid-cols-2');
+        updatePreview();
+      } else {
+        previewToggle.textContent = 'Show Preview';
+        previewPanel.classList.add('hidden');
+        container.classList.remove('md:grid-cols-2');
+        container.classList.add('grid-cols-1');
+      }
+    });
+
+    const updatePreview = () => {
+      if (!isPreviewOn || !previewPanel) return;
+      const markdownText = contentInput.value;
+      if (typeof (window as any).marked !== 'undefined') {
+        previewPanel.innerHTML = (window as any).marked.parse(markdownText || '');
+      } else {
+        previewPanel.textContent = markdownText;
+      }
+    };
+
+    contentInput.addEventListener('input', updatePreview);
+
+    // 4. Save handler
+    const showToast = (msg = 'Saved!') => {
+      if (!toast) return;
+      const span = toast.querySelector('span');
+      if (span) span.textContent = msg;
+      
+      toast.classList.remove('opacity-0', 'translate-y-12', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+      }, 3000);
+    };
+
+    let isSaving = false;
+
+    const saveForm = async (publishState: boolean, silent = false) => {
+      if (isSaving) return;
+
+      const title = titleInput.value.trim();
+      const slug = slugInput.value.trim();
+
+      if (!title || !slug) {
+        if (!silent) alert('Title and Slug are required.');
+        return;
+      }
+
+      if (!silent) {
+        isSaving = true;
+        draftBtn.disabled = true;
+        publishBtn.disabled = true;
+      }
+
+      const tech_stack = (techStackInput?.value || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      const payload = {
+        title,
+        slug,
+        client_type: clientTypeInput?.value.trim() || '',
+        outcome: outcomeInput?.value.trim() || '',
+        tech_stack,
+        cover_image: coverInput?.value.trim() || '',
+        sort_order: parseInt(sortOrderInput?.value || '0', 10),
+        published: publishState,
+        description: descInput?.value.trim() || '',
+        problem: problemInput?.value.trim() || '',
+        solution: solutionInput?.value.trim() || '',
+        content: contentInput.value,
+      };
+
+      try {
+        const { error } = await savePortfolio(payload, id);
+        if (error) throw error;
+
+        if (!silent) {
+          showToast(publishState ? 'Published successfully!' : 'Saved successfully!');
+          
+          if (publishState) {
+            await triggerDeploy();
+          }
+
+          setTimeout(() => {
+            window.location.href = '/portfolio/';
+          }, 1500);
+        } else {
+          const now = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (autosaveIndicator) {
+            autosaveIndicator.textContent = `Auto-saved at ${now}`;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to save portfolio:', err);
+        if (!silent) {
+          alert('Failed to save: ' + err.message);
+        }
+      } finally {
+        if (!silent) {
+          isSaving = false;
+          draftBtn.disabled = false;
+          publishBtn.disabled = false;
+        }
+      }
+    };
+
+    draftBtn.addEventListener('click', () => saveForm(false));
+    publishBtn.addEventListener('click', () => saveForm(true));
+
+    // 5. Auto-save Runner
+    let lastContent = '';
+    let lastTitle = '';
+
+    setInterval(async () => {
+      if (form.classList.contains('hidden')) return;
+
+      if (contentInput.value !== lastContent || titleInput.value !== lastTitle) {
+        lastContent = contentInput.value;
+        lastTitle = titleInput.value;
+        await saveForm(false, true);
+      }
+    }, 30000);
+
+    // Fetch data
+    await loadData();
+  });
+</script>

@@ -1,0 +1,506 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase';
+
+export async function getStaticPaths() {
+  const { data } = await supabase
+    .from('resources')
+    .select('id');
+  
+  return (data || []).map((r) => ({
+    params: { id: r.id }
+  }));
+}
+
+const { id } = Astro.params;
+---
+
+<AdminLayout title="Edit Resource" activeSection="resources">
+  <div class="space-y-6 font-sans pb-24 relative" id="edit-resource-root" data-id={id}>
+    
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Edit Resource</h1>
+        <p class="text-xs text-slate-500 font-light mt-1">Modify your downloadable blueprint and email-gated system.</p>
+      </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 space-y-3">
+      <svg class="animate-spin h-6 w-6 text-[#1D9E75] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-xs font-semibold">Retrieving resource details...</p>
+    </div>
+
+    <!-- Form -->
+    <form id="resource-editor-form" class="hidden space-y-6">
+      
+      <!-- Row 1: Title -->
+      <div class="space-y-1">
+        <label for="res-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Resource Title</label>
+        <input 
+          type="text" 
+          id="res-title" 
+          required 
+          placeholder="e.g. Offline-First Local POS Sync Guide" 
+          class="w-full h-[52px] px-5 rounded-2xl border border-slate-200 text-lg font-bold focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition shadow-xs"
+        />
+      </div>
+
+      <!-- Row 2: Slug & Category -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="res-slug" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">URL Slug</label>
+          <input 
+            type="text" 
+            id="res-slug" 
+            required 
+            placeholder="auto-generated-from-title" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="res-category" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</label>
+          <input 
+            type="text" 
+            id="res-category" 
+            required 
+            placeholder="e.g. Prompt, Guide, Schema" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 3: Estimated Value & Preview Image URL -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="res-value" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Estimated Value (e.g. $39 Value)</label>
+          <input 
+            type="text" 
+            id="res-value" 
+            placeholder="$29 Value" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="res-preview-image" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preview Image URL</label>
+          <input 
+            type="text" 
+            id="res-preview-image" 
+            placeholder="/assets/images/resources/preview.webp" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 4: Target Service Tag & Download URL -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="res-service-tag" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Service Tag (for Dynamic Context Matching)</label>
+          <input 
+            type="text" 
+            id="res-service-tag" 
+            placeholder="whatsapp-automation" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="res-download-url" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Locked Asset Download URL (Direct File Link)</label>
+          <input 
+            type="text" 
+            id="res-download-url" 
+            placeholder="https://drive.google.com/..." 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      <!-- Row 5: Premium Toggle -->
+      <div class="flex items-center gap-6 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50 max-w-md select-none font-sans">
+        <div class="flex items-center gap-2">
+          <input 
+            type="checkbox" 
+            id="res-premium" 
+            class="h-4 w-4 rounded text-emerald-600 border-slate-350 focus:ring-[#1D9E75]/25"
+          />
+          <label for="res-premium" class="text-xs font-bold text-slate-800 cursor-pointer">Mark as Premium</label>
+        </div>
+      </div>
+
+      <!-- Row 6: Description -->
+      <div class="space-y-1">
+        <label for="res-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Description (Teaser details - Google Search snippet, max 155 chars)</label>
+        <textarea 
+          id="res-desc" 
+          rows="3" 
+          placeholder="Brief description demonstrating value..." 
+          class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+        ></textarea>
+      </div>
+
+      <!-- Row 7: Excerpt -->
+      <div class="space-y-1">
+        <label for="res-excerpt" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Excerpt / Preview Chapter (Crawlable preview content)</label>
+        <textarea 
+          id="res-excerpt" 
+          rows="4" 
+          placeholder="Snippet preview from Chapter 1..." 
+          class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono"
+        ></textarea>
+      </div>
+
+      <!-- Row 8: Array fields -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="space-y-1">
+          <label for="res-bullet-points" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bullet Points (What you'll unlock - one per line)</label>
+          <textarea 
+            id="res-bullet-points" 
+            rows="6" 
+            placeholder="Interactive chat bot node\nGoogle sheets connection script" 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+        <div class="space-y-1">
+          <label for="res-teaser-points" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Teaser Points (SEO bullet highlights - one per line)</label>
+          <textarea 
+            id="res-teaser-points" 
+            rows="6" 
+            placeholder="10 copy-paste prompting scripts\nValidation triggers" 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+        <div class="space-y-1">
+          <label for="res-toc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Table of Contents (Chapters/Index - one per line)</label>
+          <textarea 
+            id="res-toc" 
+            rows="6" 
+            placeholder="Chapter 1: Grounding Prompts\nChapter 2: Schema definitions" 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Row 9: Locked Content Markdown Textarea -->
+      <div class="space-y-1">
+        <div class="flex items-center justify-between">
+          <label for="res-content" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Locked Content (Gated markdown - 25 rows)</label>
+          
+          <button 
+            type="button" 
+            id="preview-toggle-btn"
+            class="text-[10px] font-bold text-indigo-650 hover:text-indigo-850 hover:underline transition cursor-pointer"
+          >
+            Show Preview
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6" id="editor-preview-container">
+          <textarea 
+            id="res-content" 
+            rows="25" 
+            placeholder="# Locked System blueprint\nType premium gating content here..." 
+            class="w-full p-5 rounded-2xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono leading-relaxed"
+          ></textarea>
+
+          <div 
+            id="preview-panel" 
+            class="hidden w-full p-6 bg-white border border-slate-200 rounded-2xl overflow-y-auto max-h-[550px] prose prose-sm content-body"
+          >
+            <p class="text-slate-400 italic text-xs">Nothing to preview yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <div class="flex items-center gap-2 text-[10px] text-slate-450 select-none font-medium h-4 justify-end">
+      <span id="autosave-indicator"></span>
+    </div>
+
+    <!-- Bottom Sticky Action Bar -->
+    <div class="fixed bottom-0 left-0 right-0 md:left-60 bg-white/90 backdrop-blur-md border-t border-slate-200/80 px-6 py-4 flex items-center justify-between z-40 shadow-lg">
+      <a 
+        href="/resources/" 
+        class="text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5"
+      >
+        <i class="ti ti-arrow-left text-xs"></i> Back to Resources
+      </a>
+
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          id="draft-btn"
+          class="h-10 px-5 border border-slate-200 hover:border-slate-800 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+        >
+          Save as Draft
+        </button>
+
+        <button 
+          type="button" 
+          id="publish-btn"
+          class="h-10 px-5 bg-[#1D9E75] hover:bg-[#0F6E56] text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm"
+        >
+          Save & Publish
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Popup -->
+    <div 
+      id="save-toast" 
+      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold font-sans"
+    >
+      <i class="ti ti-check text-sm"></i>
+      <span>Saved!</span>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+  import { getResource, saveResource, triggerDeploy } from '../../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const root = document.getElementById('edit-resource-root');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const form = document.getElementById('resource-editor-form') as HTMLFormElement | null;
+    const titleInput = document.getElementById('res-title') as HTMLInputElement | null;
+    const slugInput = document.getElementById('res-slug') as HTMLInputElement | null;
+    const categoryInput = document.getElementById('res-category') as HTMLInputElement | null;
+    const valueInput = document.getElementById('res-value') as HTMLInputElement | null;
+    const previewImgInput = document.getElementById('res-preview-image') as HTMLInputElement | null;
+    const serviceTagInput = document.getElementById('res-service-tag') as HTMLInputElement | null;
+    const downloadUrlInput = document.getElementById('res-download-url') as HTMLInputElement | null;
+    const premiumInput = document.getElementById('res-premium') as HTMLInputElement | null;
+    const descInput = document.getElementById('res-desc') as HTMLTextAreaElement | null;
+    const excerptInput = document.getElementById('res-excerpt') as HTMLTextAreaElement | null;
+    
+    const bulletInput = document.getElementById('res-bullet-points') as HTMLTextAreaElement | null;
+    const teaserInput = document.getElementById('res-teaser-points') as HTMLTextAreaElement | null;
+    const tocInput = document.getElementById('res-toc') as HTMLTextAreaElement | null;
+    const contentInput = document.getElementById('res-content') as HTMLTextAreaElement | null;
+
+    const previewToggle = document.getElementById('preview-toggle-btn');
+    const container = document.getElementById('editor-preview-container');
+    const previewPanel = document.getElementById('preview-panel');
+    const toast = document.getElementById('save-toast');
+    const autosaveIndicator = document.getElementById('autosave-indicator');
+
+    const draftBtn = document.getElementById('draft-btn') as HTMLButtonElement | null;
+    const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+
+    if (!root || !form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel || !loadingOverlay) return;
+
+    const id = root.getAttribute('data-id') || '';
+
+    // 1. Fetch Existing Resource Data
+    const loadResourceData = async () => {
+      const { data: res, error } = await getResource(id);
+      if (error || !res) {
+        console.error('Failed to load resource:', error);
+        loadingOverlay.innerHTML = `
+          <div class="text-rose-600 font-semibold bg-rose-50 border border-rose-100 py-4 px-6 rounded-xl inline-block">
+            Error: Failed to load resource details.
+          </div>
+        `;
+        return;
+      }
+
+      // Populate Form Fields
+      titleInput.value = res.title || '';
+      slugInput.value = res.slug || '';
+      categoryInput.value = res.category || '';
+      valueInput.value = res.estimated_value || '';
+      previewImgInput.value = res.preview_image || '';
+      serviceTagInput.value = res.target_service_tag || '';
+      downloadUrlInput.value = res.download_url || '';
+      if (premiumInput) premiumInput.checked = !!res.premium;
+      descInput.value = res.description || '';
+      excerptInput.value = res.excerpt || '';
+      contentInput.value = res.locked_content || '';
+
+      // Populate line arrays to textareas
+      if (bulletInput) bulletInput.value = (res.bullet_points || []).join('\n');
+      if (teaserInput) teaserInput.value = (res.teaser_points || []).join('\n');
+      if (tocInput) tocInput.value = (res.table_of_contents || []).join('\n');
+
+      // Reveal form
+      loadingOverlay.classList.add('hidden');
+      form.classList.remove('hidden');
+
+      // Initialize auto-save states
+      lastContent = contentInput.value;
+      lastTitle = titleInput.value;
+    };
+
+    // 2. Slug auto-generation guard
+    let isSlugEdited = true;
+    slugInput.addEventListener('input', () => {
+      isSlugEdited = true;
+    });
+
+    titleInput.addEventListener('input', () => {
+      if (!isSlugEdited || !slugInput.value) {
+        slugInput.value = titleInput.value
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-');
+      }
+    });
+
+    // 3. Live Preview
+    let isPreviewOn = false;
+    previewToggle?.addEventListener('click', () => {
+      isPreviewOn = !isPreviewOn;
+      if (isPreviewOn) {
+        previewToggle.textContent = 'Hide Preview';
+        previewPanel.classList.remove('hidden');
+        container.classList.remove('grid-cols-1');
+        container.classList.add('md:grid-cols-2');
+        updatePreview();
+      } else {
+        previewToggle.textContent = 'Show Preview';
+        previewPanel.classList.add('hidden');
+        container.classList.remove('md:grid-cols-2');
+        container.classList.add('grid-cols-1');
+      }
+    });
+
+    const updatePreview = () => {
+      if (!isPreviewOn || !previewPanel) return;
+      const markdownText = contentInput.value;
+      if (typeof (window as any).marked !== 'undefined') {
+        previewPanel.innerHTML = (window as any).marked.parse(markdownText || '');
+      } else {
+        previewPanel.textContent = markdownText;
+      }
+    };
+
+    contentInput.addEventListener('input', updatePreview);
+
+    // 4. Save handler
+    const showToast = (msg = 'Saved!') => {
+      if (!toast) return;
+      const span = toast.querySelector('span');
+      if (span) span.textContent = msg;
+      
+      toast.classList.remove('opacity-0', 'translate-y-12', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+      }, 3000);
+    };
+
+    let isSaving = false;
+
+    const saveForm = async (publishState: boolean, silent = false) => {
+      if (isSaving) return;
+
+      const title = titleInput.value.trim();
+      const slug = slugInput.value.trim();
+
+      if (!title || !slug) {
+        if (!silent) alert('Title and Slug are required.');
+        return;
+      }
+
+      if (!silent) {
+        isSaving = true;
+        draftBtn.disabled = true;
+        publishBtn.disabled = true;
+      }
+
+      const bullet_points = (bulletInput?.value || '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      const teaser_points = (teaserInput?.value || '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      const table_of_contents = (tocInput?.value || '')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      const payload = {
+        title,
+        slug,
+        category: categoryInput?.value.trim() || 'Uncategorized',
+        description: descInput?.value.trim() || '',
+        estimated_value: valueInput?.value.trim() || '$29 Value',
+        preview_image: previewImgInput?.value.trim() || '',
+        target_service_tag: serviceTagInput?.value.trim() || '',
+        download_url: downloadUrlInput?.value.trim() || '',
+        premium: premiumInput ? premiumInput.checked : false,
+        published: publishState,
+        bullet_points,
+        teaser_points,
+        table_of_contents,
+        locked_content: contentInput.value,
+        excerpt: excerptInput?.value.trim() || '',
+      };
+
+      try {
+        const { error } = await saveResource(payload, id);
+        if (error) throw error;
+
+        if (!silent) {
+          showToast(publishState ? 'Published successfully!' : 'Saved successfully!');
+          
+          if (publishState) {
+            await triggerDeploy();
+          }
+
+          setTimeout(() => {
+            window.location.href = '/resources/';
+          }, 1500);
+        } else {
+          const now = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (autosaveIndicator) {
+            autosaveIndicator.textContent = `Auto-saved at ${now}`;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to save resource:', err);
+        if (!silent) {
+          alert('Failed to save resource: ' + err.message);
+        }
+      } finally {
+        if (!silent) {
+          isSaving = false;
+          draftBtn.disabled = false;
+          publishBtn.disabled = false;
+        }
+      }
+    };
+
+    draftBtn.addEventListener('click', () => saveForm(false));
+    publishBtn.addEventListener('click', () => saveForm(true));
+
+    // 5. Auto-save Runner
+    let lastContent = '';
+    let lastTitle = '';
+
+    setInterval(async () => {
+      if (form.classList.contains('hidden')) return;
+
+      if (contentInput.value !== lastContent || titleInput.value !== lastTitle) {
+        lastContent = contentInput.value;
+        lastTitle = titleInput.value;
+        await saveForm(false, true);
+      }
+    }, 30000);
+
+    // Load data
+    await loadResourceData();
+  });
+</script>

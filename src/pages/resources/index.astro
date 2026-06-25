@@ -1,0 +1,182 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Resources" activeSection="resources">
+  <div class="space-y-6 font-sans">
+    
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Gated Resources</h1>
+        <p class="text-xs text-slate-500 font-light mt-1">Manage downloadable lead magnets and premium checklists.</p>
+      </div>
+      <a 
+        href="/resources/new/" 
+        class="inline-flex h-10 px-5 items-center justify-center rounded-xl bg-[#1D9E75] hover:bg-[#0F6E56] text-white text-xs font-bold transition shadow-sm cursor-pointer"
+      >
+        New Resource &rarr;
+      </a>
+    </div>
+
+    <!-- Table -->
+    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="w-full border-collapse text-left text-xs">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Title</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Category</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Status</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Updated</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="resource-table-body" class="divide-y divide-slate-100">
+          {Array.from({ length: 3 }).map(() => (
+            <tr class="animate-pulse">
+              <td class="px-6 py-4"><div class="h-3 w-48 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-16 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-12 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-20 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4 text-right"><div class="h-3 w-24 bg-slate-100 rounded ml-auto"></div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script>
+  import { getResources, deleteResource, saveResource, triggerDeploy } from '../../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const tbody = document.getElementById('resource-table-body');
+    if (!tbody) return;
+
+    const loadResources = async () => {
+      tbody.innerHTML = `
+        <tr class="animate-pulse">
+          <td colspan="5" class="px-6 py-12 text-center text-slate-400">Loading resources...</td>
+        </tr>
+      `;
+
+      const { data: resources, error } = await getResources();
+
+      if (error) {
+        console.error('Failed to load resources:', error);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-rose-600 font-semibold bg-rose-50/40">Failed to load resources.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!resources || resources.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <i class="ti ti-folder-off text-2xl text-slate-350"></i>
+                <span>No resources created yet.</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = resources.map(res => {
+        const updateDate = res.updated_at 
+          ? new Date(res.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'N/A';
+        
+        const statusBadge = res.published
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">Published</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-slate-150 text-slate-500 border border-slate-200/50">Draft</span>`;
+
+        const toggleLabel = res.published ? 'Unpublish' : 'Publish';
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-6 py-4 text-slate-900 font-semibold max-w-sm truncate">${res.title}</td>
+            <td class="px-6 py-4 text-slate-655 font-medium">${res.category || 'Uncategorized'}</td>
+            <td class="px-6 py-4">${statusBadge}</td>
+            <td class="px-6 py-4 text-slate-450">${updateDate}</td>
+            <td class="px-6 py-4 text-right space-x-1.5 shrink-0 whitespace-nowrap">
+              <button 
+                data-action="toggle-publish" 
+                data-id="${res.id}" 
+                data-title="${res.title}"
+                data-published="${res.published}"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition cursor-pointer"
+              >
+                ${toggleLabel}
+              </button>
+              <a 
+                href="/resources/${res.id}/"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-[#1D9E75] hover:text-white hover:border-[#1D9E75] transition"
+              >
+                Edit
+              </a>
+              <button 
+                data-action="delete" 
+                data-id="${res.id}"
+                data-title="${res.title}"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition cursor-pointer"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // Table action delegation
+    tbody.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('button');
+      if (!btn) return;
+
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id') || '';
+      const title = btn.getAttribute('data-title') || '';
+
+      if (action === 'delete') {
+        if (confirm(`Are you sure you want to delete "${title}"?`)) {
+          btn.disabled = true;
+          btn.textContent = 'Deleting...';
+          const { error } = await deleteResource(id);
+          if (error) {
+            alert('Failed: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+          } else {
+            await loadResources();
+          }
+        }
+      }
+
+      if (action === 'toggle-publish') {
+        const isPublished = btn.getAttribute('data-published') === 'true';
+        btn.disabled = true;
+        btn.textContent = isPublished ? 'Unpublishing...' : 'Publishing...';
+        
+        const { error } = await saveResource({ published: !isPublished }, id);
+        if (error) {
+          alert('Failed: ' + error.message);
+          btn.disabled = false;
+          btn.textContent = isPublished ? 'Unpublish' : 'Publish';
+        } else {
+          if (!isPublished) await triggerDeploy();
+          await loadResources();
+        }
+      }
+    });
+
+    await loadResources();
+  });
+</script>

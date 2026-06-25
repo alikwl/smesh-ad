@@ -1,0 +1,299 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Dashboard" activeSection="dashboard">
+  <div class="space-y-8 font-sans">
+    
+    <!-- Header Summary Title -->
+    <div>
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">Overview Dashboard</h1>
+      <p class="text-xs text-slate-500 font-light mt-1">Real-time statistics and lead submissions summary.</p>
+    </div>
+
+    <!-- 4 Stats Cards Grid (2x2 on small screens, 4x1 on desktop) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <!-- Card 1: Blog Posts -->
+      <div class="bg-white border border-slate-200/60 border-l-4 border-emerald-500 rounded-2xl p-6 shadow-sm flex flex-col justify-center space-y-2">
+        <div id="stat-posts" class="text-3xl font-extrabold text-slate-900 tracking-tight leading-none font-display">
+          <div class="h-8 w-12 bg-slate-100 animate-pulse rounded-md"></div>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-450">Total Blog Posts</span>
+      </div>
+
+      <!-- Card 2: Resources -->
+      <div class="bg-white border border-slate-200/60 border-l-4 border-emerald-500 rounded-2xl p-6 shadow-sm flex flex-col justify-center space-y-2">
+        <div id="stat-resources" class="text-3xl font-extrabold text-slate-900 tracking-tight leading-none font-display">
+          <div class="h-8 w-12 bg-slate-100 animate-pulse rounded-md"></div>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-450">Total Resources</span>
+      </div>
+
+      <!-- Card 3: New Leads (7 Days) -->
+      <div class="bg-white border border-slate-200/60 border-l-4 border-emerald-500 rounded-2xl p-6 shadow-sm flex flex-col justify-center space-y-2">
+        <div id="stat-leads-week" class="text-3xl font-extrabold text-slate-900 tracking-tight leading-none font-display">
+          <div class="h-8 w-12 bg-slate-100 animate-pulse rounded-md"></div>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-450">New Leads (7 Days)</span>
+      </div>
+
+      <!-- Card 4: Contact Submissions -->
+      <div class="bg-white border border-slate-200/60 border-l-4 border-emerald-500 rounded-2xl p-6 shadow-sm flex flex-col justify-center space-y-2">
+        <div id="stat-contacts" class="text-3xl font-extrabold text-slate-900 tracking-tight leading-none font-display">
+          <div class="h-8 w-12 bg-slate-100 animate-pulse rounded-md"></div>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-450">Contact Submissions</span>
+      </div>
+
+    </div>
+
+    <!-- Main Layout Grid (Recent Activity & Deploy Status) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left 2 Columns: Recent Contact Submissions -->
+      <div class="lg:col-span-2 bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Recent Contact Inquiries</h2>
+            <p class="text-[11px] text-slate-450 font-light mt-0.5">Last 5 submissions received via homepage contact form.</p>
+          </div>
+          <a href="/leads" class="text-xs text-[#1D9E75] hover:text-[#0F6E56] font-bold hover:underline transition">View All Leads &rarr;</a>
+        </div>
+
+        <!-- Scrollable Table Wrapper -->
+        <div class="overflow-x-auto rounded-xl border border-slate-150">
+          <table class="w-full border-collapse text-left text-[11px] font-sans">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="px-5 py-3 font-bold uppercase tracking-wider text-slate-450 text-[9px]">Name</th>
+                <th class="px-5 py-3 font-bold uppercase tracking-wider text-slate-450 text-[9px]">WhatsApp</th>
+                <th class="px-5 py-3 font-bold uppercase tracking-wider text-slate-450 text-[9px]">Budget</th>
+                <th class="px-5 py-3 font-bold uppercase tracking-wider text-slate-450 text-[9px] text-right">Date</th>
+              </tr>
+            </thead>
+            <tbody id="recent-submissions-body" class="divide-y divide-slate-100">
+              <!-- Loading Skeleton Rows -->
+              {Array.from({ length: 3 }).map(() => (
+                <tr class="animate-pulse">
+                  <td class="px-5 py-4"><div class="h-3 w-20 bg-slate-100 rounded"></div></td>
+                  <td class="px-5 py-4"><div class="h-3 w-24 bg-slate-100 rounded"></div></td>
+                  <td class="px-5 py-4"><div class="h-3 w-12 bg-slate-100 rounded"></div></td>
+                  <td class="px-5 py-4 text-right"><div class="h-3 w-16 bg-slate-100 rounded ml-auto"></div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Column: Deploy Status Panel -->
+      <div class="bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Production Deployments</h2>
+            <p class="text-[11px] text-slate-450 font-light mt-0.5">Push changes from Supabase live to CDN hosting.</p>
+          </div>
+
+          <!-- Last Deployed Metadata -->
+          <div class="bg-slate-50 border border-slate-150 rounded-xl p-4 font-sans text-xs space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-450 font-medium">Pipeline Status</span>
+              <span class="inline-flex items-center gap-1 font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 text-[10px]">Active</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-450 font-medium">Last Build Triggered</span>
+              <span class="font-bold text-slate-800 last-deployed-text">Never</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Trigger Deploy Button -->
+        <button 
+          id="dashboard-deploy-btn" 
+          class="w-full py-4 bg-[#1D9E75] hover:bg-[#0F6E56] text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-md select-none"
+        >
+          <span id="dashboard-deploy-text">🚀 Deploy Site</span>
+          <!-- Spinner -->
+          <svg id="dashboard-deploy-spinner" class="hidden animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase, triggerDeploy } from '../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    
+    // 1. Last Deployed State
+    const updateLastDeployedText = () => {
+      const stamp = localStorage.getItem('last_deployed');
+      const els = document.querySelectorAll('.last-deployed-text');
+      els.forEach(el => {
+        el.textContent = stamp ? stamp : 'Never';
+      });
+    };
+    updateLastDeployedText();
+
+    // 2. Fetch Dashboard Statistics
+    const loadStats = async () => {
+      try {
+        // Fetch Blog Count
+        const { count: blogCount } = await supabase
+          .from('blog_posts')
+          .select('*', { count: 'exact', head: true });
+        
+        const postsContainer = document.getElementById('stat-posts');
+        if (postsContainer) postsContainer.textContent = String(blogCount || 0);
+
+        // Fetch Resources Count
+        const { count: resourcesCount } = await supabase
+          .from('resources')
+          .select('*', { count: 'exact', head: true });
+        
+        const resourcesContainer = document.getElementById('stat-resources');
+        if (resourcesContainer) resourcesContainer.textContent = String(resourcesCount || 0);
+
+        // Fetch Leads (Last 7 Days)
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const { count: leadsCount } = await supabase
+          .from('resource_leads')
+          .select('*', { count: 'exact', head: true })
+          .gt('unlocked_at', oneWeekAgo.toISOString());
+        
+        const leadsContainer = document.getElementById('stat-leads-week');
+        if (leadsContainer) leadsContainer.textContent = String(leadsCount || 0);
+
+        // Fetch Contact Submissions Count
+        const { count: contactCount } = await supabase
+          .from('contact_submissions')
+          .select('*', { count: 'exact', head: true });
+        
+        const contactsContainer = document.getElementById('stat-contacts');
+        if (contactsContainer) contactsContainer.textContent = String(contactCount || 0);
+
+      } catch (err) {
+        console.error('Failed to load dashboard statistics:', err);
+      }
+    };
+
+    // 3. Fetch Recent Submissions
+    const loadRecentSubmissions = async () => {
+      const tbody = document.getElementById('recent-submissions-body');
+      if (!tbody) return;
+
+      try {
+        const { data: contacts, error } = await supabase
+          .from('contact_submissions')
+          .select('name, whatsapp, budget, submitted_at')
+          .order('submitted_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+
+        if (!contacts || contacts.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="px-5 py-8 text-center text-slate-400 italic">No inquiries found.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = contacts.map(c => {
+          const date = c.submitted_at 
+            ? new Date(c.submitted_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+            : 'N/A';
+          return `
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-5 py-3.5 font-bold text-slate-900">${c.name || 'Anonymous'}</td>
+              <td class="px-5 py-3.5 text-slate-600 font-mono">${c.whatsapp || 'N/A'}</td>
+              <td class="px-5 py-3.5 text-slate-655 font-semibold">${c.budget || 'N/A'}</td>
+              <td class="px-5 py-3.5 text-right text-slate-450">${date}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to load inquiries list:', err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-5 py-8 text-center text-rose-600 font-semibold bg-rose-50/40">Failed to load inquiries list.</td>
+          </tr>
+        `;
+      }
+    };
+
+    // 4. Trigger Deploy from Dashboard Panel (Synced with Sidebar button)
+    const deployBtn = document.getElementById('dashboard-deploy-btn') as HTMLButtonElement | null;
+    const deployText = document.getElementById('dashboard-deploy-text');
+    const deploySpinner = document.getElementById('dashboard-deploy-spinner');
+
+    deployBtn?.addEventListener('click', async () => {
+      if (!deployBtn || !deployText || !deploySpinner) return;
+
+      // Loading state
+      deployBtn.disabled = true;
+      deployText.textContent = 'Deploying...';
+      deploySpinner.classList.remove('hidden');
+      deployBtn.classList.remove('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+      deployBtn.classList.add('bg-slate-700');
+
+      try {
+        const success = await triggerDeploy();
+        if (success) {
+          // Store stamp
+          const dateStr = new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          localStorage.setItem('last_deployed', dateStr);
+          updateLastDeployedText();
+
+          // Success feedback
+          deployText.textContent = '✓ Build triggered!';
+          deploySpinner.classList.add('hidden');
+          deployBtn.classList.remove('bg-slate-700');
+          deployBtn.classList.add('bg-emerald-600');
+
+          setTimeout(() => {
+            deployBtn.disabled = false;
+            deployText.textContent = '🚀 Deploy Site';
+            deployBtn.classList.remove('bg-emerald-600');
+            deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+          }, 3000);
+        } else {
+          throw new Error('Deploy failed');
+        }
+      } catch (e) {
+        console.error(e);
+        deployText.textContent = 'Failed. Try again';
+        deploySpinner.classList.add('hidden');
+        deployBtn.classList.remove('bg-slate-700');
+        deployBtn.classList.add('bg-rose-600');
+
+        setTimeout(() => {
+          deployBtn.disabled = false;
+          deployText.textContent = '🚀 Deploy Site';
+          deployBtn.classList.remove('bg-rose-600');
+          deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+        }, 3000);
+      }
+    });
+
+    // Run fetches
+    await Promise.all([loadStats(), loadRecentSubmissions()]);
+  });
+</script>

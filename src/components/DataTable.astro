@@ -1,0 +1,108 @@
+---
+interface Action {
+  label: string;
+  href: string; // e.g. "/blog/:id" or "/blog/"
+  style?: 'primary' | 'danger' | 'secondary';
+}
+
+interface Props {
+  columns: string[];
+  rows: any[][]; // array of arrays where row[0] is the ID/slug, and row[1..N] are the column cells
+  actions?: Action[];
+}
+
+const { columns, rows = [], actions = [] } = Astro.props;
+
+// Normalize rows: assume row[0] is the row ID, and row[1..N] are the cell values matching the columns
+const normalizedRows = rows.map(row => {
+  return {
+    id: row[0],
+    cells: row.slice(1)
+  };
+});
+---
+
+<div class="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+  <table class="w-full border-collapse text-left text-xs font-sans">
+    
+    <!-- Table Header -->
+    <thead>
+      <tr class="bg-slate-50/50 border-b border-slate-200">
+        {columns.map((col) => (
+          <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">
+            {col}
+          </th>
+        ))}
+        {actions.length > 0 && (
+          <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20 text-right">
+            Actions
+          </th>
+        )}
+      </tr>
+    </thead>
+
+    <!-- Table Body -->
+    <tbody class="divide-y divide-slate-100">
+      {normalizedRows.length > 0 ? (
+        normalizedRows.map((row) => (
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            {row.cells.map((cell) => (
+              <td class="px-6 py-4 text-slate-700 leading-normal font-medium">
+                {cell !== null && cell !== undefined ? (
+                  typeof cell === 'boolean' ? (
+                    cell ? (
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-55 text-emerald-800 border border-emerald-100">Yes</span>
+                    ) : (
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200/50">No</span>
+                    )
+                  ) : (
+                    cell
+                  )
+                ) : (
+                  <span class="text-slate-350 italic">None</span>
+                )}
+              </td>
+            ))}
+            
+            <!-- Actions Column -->
+            {actions.length > 0 && (
+              <td class="px-6 py-4 text-right space-x-1.5 shrink-0 whitespace-nowrap">
+                {actions.map((act) => {
+                  const resolvedHref = act.href.includes(':id') 
+                    ? act.href.replace(':id', row.id) 
+                    : `${act.href.endsWith('/') ? act.href : act.href + '/'}${row.id}`;
+                    
+                  let btnClass = "inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border transition ";
+                  if (act.style === 'primary') {
+                    btnClass += "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-[#1D9E75] hover:text-white hover:border-[#1D9E75]";
+                  } else if (act.style === 'danger') {
+                    btnClass += "bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-600 hover:text-white hover:border-rose-600";
+                  } else {
+                    btnClass += "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-800 hover:text-white hover:border-slate-800";
+                  }
+                  
+                  return (
+                    <a href={resolvedHref} class={btnClass}>
+                      {act.label}
+                    </a>
+                  );
+                })}
+              </td>
+            )}
+          </tr>
+        ))
+      ) : (
+        <!-- Empty State -->
+        <tr>
+          <td colspan={columns.length + (actions.length > 0 ? 1 : 0)} class="px-6 py-12 text-center text-slate-400 font-medium">
+            <div class="flex flex-col items-center justify-center space-y-2">
+              <i class="ti ti-folder-off text-2xl text-slate-300"></i>
+              <span>No items found.</span>
+            </div>
+          </td>
+        </tr>
+      )}
+    </tbody>
+
+  </table>
+</div>

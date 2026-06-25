@@ -1,0 +1,192 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Blog Posts" activeSection="blog">
+  <div class="space-y-6 font-sans">
+    
+    <!-- Page Header & Action Button -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Blog Posts</h1>
+        <p class="text-xs text-slate-500 font-light mt-1">Manage, edit, publish, or delete your articles.</p>
+      </div>
+      <a 
+        href="/blog/new/" 
+        class="inline-flex h-10 px-5 items-center justify-center rounded-xl bg-[#1D9E75] hover:bg-[#0F6E56] text-white text-xs font-bold transition shadow-sm cursor-pointer"
+      >
+        New Post &rarr;
+      </a>
+    </div>
+
+    <!-- Client-Side Rendered DataTable structure -->
+    <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="w-full border-collapse text-left text-xs">
+        
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Title</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Category</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Status</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Updated</th>
+            <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20 text-right">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="blog-table-body" class="divide-y divide-slate-100">
+          <!-- Loading skeleton rows -->
+          {Array.from({ length: 3 }).map(() => (
+            <tr class="animate-pulse">
+              <td class="px-6 py-4"><div class="h-3 w-48 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-16 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-12 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4"><div class="h-3 w-20 bg-slate-100 rounded"></div></td>
+              <td class="px-6 py-4 text-right"><div class="h-3 w-24 bg-slate-100 rounded ml-auto"></div></td>
+            </tr>
+          ))}
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<!-- Client Side Controller -->
+<script>
+  import { supabase, getBlogs, deleteBlog, saveBlog, triggerDeploy } from '../../lib/supabase';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const tbody = document.getElementById('blog-table-body');
+    if (!tbody) return;
+
+    // Load and render posts
+    const loadPosts = async () => {
+      tbody.innerHTML = `
+        <tr class="animate-pulse">
+          <td colspan="5" class="px-6 py-12 text-center text-slate-400">Loading blog posts...</td>
+        </tr>
+      `;
+
+      const { data: posts, error } = await getBlogs();
+      
+      if (error) {
+        console.error('Failed to load posts:', error);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-rose-600 font-semibold bg-rose-50/40">Failed to load blog posts.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!posts || posts.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <i class="ti ti-folder-off text-2xl text-slate-350"></i>
+                <span>No blog posts created yet.</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = posts.map(post => {
+        const updateDate = post.updated_at 
+          ? new Date(post.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'N/A';
+        
+        const statusBadge = post.published
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">Published</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-slate-150 text-slate-500 border border-slate-200/50">Draft</span>`;
+
+        const toggleLabel = post.published ? 'Unpublish' : 'Publish';
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-6 py-4 text-slate-900 font-semibold max-w-sm truncate">${post.title}</td>
+            <td class="px-6 py-4 text-slate-655 font-medium">${post.category || 'Uncategorized'}</td>
+            <td class="px-6 py-4">${statusBadge}</td>
+            <td class="px-6 py-4 text-slate-450">${updateDate}</td>
+            <td class="px-6 py-4 text-right space-x-1.5 shrink-0 whitespace-nowrap">
+              <button 
+                data-action="toggle-publish" 
+                data-id="${post.id}" 
+                data-title="${post.title}"
+                data-published="${post.published}"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition cursor-pointer"
+              >
+                ${toggleLabel}
+              </button>
+              <a 
+                href="/blog/${post.id}/"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-[#1D9E75] hover:text-white hover:border-[#1D9E75] transition"
+              >
+                Edit
+              </a>
+              <button 
+                data-action="delete" 
+                data-id="${post.id}"
+                data-title="${post.title}"
+                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition cursor-pointer"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // Table click delegate for actions
+    tbody.addEventListener('click', async (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('button');
+      if (!btn) return;
+
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id') || '';
+      const title = btn.getAttribute('data-title') || '';
+
+      if (action === 'delete') {
+        if (confirm(`Are you sure you want to delete the blog post "${title}"?`)) {
+          btn.disabled = true;
+          btn.textContent = 'Deleting...';
+          const { error } = await deleteBlog(id);
+          if (error) {
+            alert('Failed to delete post: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+          } else {
+            await loadPosts();
+          }
+        }
+      }
+
+      if (action === 'toggle-publish') {
+        const isPublished = btn.getAttribute('data-published') === 'true';
+        btn.disabled = true;
+        btn.textContent = isPublished ? 'Unpublishing...' : 'Publishing...';
+        
+        const { error } = await saveBlog({ published: !isPublished }, id);
+        if (error) {
+          alert('Failed to update status: ' + error.message);
+          btn.disabled = false;
+          btn.textContent = isPublished ? 'Unpublish' : 'Publish';
+        } else {
+          // If toggled to published, trigger site deploy
+          if (!isPublished) {
+            await triggerDeploy();
+          }
+          await loadPosts();
+        }
+      }
+    });
+
+    // Initial load
+    await loadPosts();
+  });
+</script>
