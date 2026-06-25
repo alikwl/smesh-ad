@@ -23,7 +23,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         <div class="text-center space-y-1.5">
           <h1 class="text-lg font-bold text-slate-900">Sign In</h1>
           <p class="text-xs text-slate-500 font-light leading-relaxed">
-            Enter your email &mdash; we'll send you a magic link.
+            Enter your email and password to access the portal.
           </p>
         </div>
 
@@ -39,12 +39,23 @@ import AdminLayout from '../layouts/AdminLayout.astro';
             />
           </div>
 
+          <div>
+            <label for="password" class="sr-only">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              required 
+              placeholder="••••••••" 
+              class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-xs focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition"
+            />
+          </div>
+
           <button 
             type="submit" 
             id="submit-btn" 
             class="w-full h-12 bg-[#1D9E75] hover:bg-[#0F6E56] text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
-            <span id="submit-text">Send Magic Link</span>
+            <span id="submit-text">Sign In</span>
             <!-- Spinner -->
             <svg id="submit-spinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -59,34 +70,12 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         </div>
       </div>
 
-      <!-- State 2: Success Confirmation -->
-      <div id="login-state-success" class="hidden w-full flex-col items-center text-center space-y-5 animate-fade-in">
-        <!-- Success Icon -->
-        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-650 flex items-center justify-center border border-emerald-100/50 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-
-        <div class="space-y-2">
-          <h2 class="text-lg font-bold text-slate-900">Check your email</h2>
-          <p class="text-xs text-slate-500 font-light leading-relaxed">
-            We sent a magic link to <span id="sent-email-placeholder" class="font-bold text-slate-900"></span>. Click it to access the dashboard.
-          </p>
-        </div>
-
-        <button 
-          id="try-again-btn" 
-          class="text-xs text-[#1D9E75] hover:text-[#0F6E56] font-bold hover:underline cursor-pointer transition pt-2"
-        >
-          Wrong email? Try again
-        </button>
-      </div>
-
     </div>
   </div>
 </AdminLayout>
 
 <script>
-  import { supabase, signInWithMagicLink } from '../lib/supabase';
+  import { supabase, signInWithPassword } from '../lib/supabase';
 
   document.addEventListener('DOMContentLoaded', async () => {
     // 1. Session Redirect Guard
@@ -101,28 +90,27 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     }
 
     const stateForm = document.getElementById('login-state-form');
-    const stateSuccess = document.getElementById('login-state-success');
     const form = document.getElementById('login-form') as HTMLFormElement | null;
     const emailInput = document.getElementById('email') as HTMLInputElement | null;
+    const passwordInput = document.getElementById('password') as HTMLInputElement | null;
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
     const submitText = document.getElementById('submit-text');
     const spinner = document.getElementById('submit-spinner');
     const errorMessage = document.getElementById('error-message');
-    const sentEmailPlaceholder = document.getElementById('sent-email-placeholder');
-    const tryAgainBtn = document.getElementById('try-again-btn');
 
-    if (!form || !emailInput || !submitBtn || !stateForm || !stateSuccess) return;
+    if (!form || !emailInput || !passwordInput || !submitBtn || !stateForm) return;
 
     // 2. Submit Handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
-      if (!email) return;
+      const password = passwordInput.value;
+      if (!email || !password) return;
 
       // Show Loading State
       if (errorMessage) errorMessage.classList.add('hidden');
       submitBtn.disabled = true;
-      if (submitText) submitText.textContent = 'Sending...';
+      if (submitText) submitText.textContent = 'Signing In...';
       if (spinner) spinner.classList.remove('hidden');
 
       if (email.toLowerCase() !== 'oxixxa@gmail.com') {
@@ -132,54 +120,31 @@ import AdminLayout from '../layouts/AdminLayout.astro';
             errorMessage.classList.remove('hidden');
           }
           submitBtn.disabled = false;
-          if (submitText) submitText.textContent = 'Send Magic Link';
+          if (submitText) submitText.textContent = 'Sign In';
           if (spinner) spinner.classList.add('hidden');
-        }, 600);
+        }, 500);
         return;
       }
 
       try {
-        const { error } = await signInWithMagicLink(email);
+        const { error } = await signInWithPassword(email, password);
         if (error) throw error;
 
-        // Toggle state to Success
-        if (sentEmailPlaceholder) sentEmailPlaceholder.textContent = email;
-        stateForm.classList.add('hidden');
-        stateSuccess.classList.remove('hidden');
-        stateSuccess.classList.add('flex');
+        // Redirect to dashboard on success
+        window.location.href = '/dashboard';
       } catch (err: any) {
         console.error('Login request failed:', err);
         // Show inline error
         if (errorMessage) {
-          errorMessage.textContent = err?.message || 'Something went wrong. Try again.';
+          errorMessage.textContent = err?.message || 'Invalid email or password.';
           errorMessage.classList.remove('hidden');
         }
         // Revert submit button
         submitBtn.disabled = false;
-        if (submitText) submitText.textContent = 'Send Magic Link';
+        if (submitText) submitText.textContent = 'Sign In';
         if (spinner) spinner.classList.add('hidden');
       }
     });
-
-    // 3. Reset State Handler
-    if (tryAgainBtn) {
-      tryAgainBtn.addEventListener('click', () => {
-        // Toggle state back to Form
-        stateSuccess.classList.remove('flex');
-        stateSuccess.classList.add('hidden');
-        stateForm.classList.remove('hidden');
-
-        // Reset fields and button status
-        form.reset();
-        submitBtn.disabled = false;
-        if (submitText) submitText.textContent = 'Send Magic Link';
-        if (spinner) spinner.classList.add('hidden');
-        if (errorMessage) {
-          errorMessage.textContent = 'Something went wrong. Try again.';
-          errorMessage.classList.add('hidden');
-        }
-      });
-    }
   });
 </script>
 

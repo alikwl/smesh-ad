@@ -26,6 +26,14 @@ export async function signInWithMagicLink(email: string) {
   return { error };
 }
 
+export async function signInWithPassword(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+  return { data, error };
+}
+
 export async function signOut() {
   await supabase.auth.signOut();
   window.location.href = '/login';
