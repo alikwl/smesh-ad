@@ -1,4 +1,4 @@
-import{s as c,h as b,t as p,j as x}from"./supabase.aa1U5wqV.js";document.addEventListener("DOMContentLoaded",async()=>{const o=document.getElementById("portfolio-table-body");if(!o)return;const l=async()=>{o.innerHTML=`
+import{s as c,h as b,t as p,j as x}from"./supabase.B9lV7hRx.js";document.addEventListener("DOMContentLoaded",async()=>{const o=document.getElementById("portfolio-table-body");if(!o)return;const l=async()=>{o.innerHTML=`
         <tr class="animate-pulse">
           <td colspan="5" class="px-6 py-12 text-center text-slate-400">Loading portfolio cases...</td>
         </tr>
