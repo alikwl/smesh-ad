@@ -147,11 +147,11 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         stateForm.classList.add('hidden');
         stateSuccess.classList.remove('hidden');
         stateSuccess.classList.add('flex');
-      } catch (err) {
+      } catch (err: any) {
         console.error('Login request failed:', err);
         // Show inline error
         if (errorMessage) {
-          errorMessage.textContent = 'Something went wrong. Try again.';
+          errorMessage.textContent = err?.message || 'Something went wrong. Try again.';
           errorMessage.classList.remove('hidden');
         }
         // Revert submit button
