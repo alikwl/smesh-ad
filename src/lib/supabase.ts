@@ -127,7 +127,7 @@ export async function getLeads() {
   const { data: leads } = await supabase
     .from('resource_leads')
     .select('*')
-    .order('unlocked_at', { ascending: false });
+    .order('created_at', { ascending: false });
   const { data: contacts } = await supabase
     .from('contact_submissions')
     .select('*')
@@ -142,5 +142,8 @@ export async function triggerDeploy() {
   const { error } = await supabase
     .from('deployments')
     .insert([{ triggered_by: email }]);
+  if (error) {
+    console.error('Database Deploy insertion failed:', error);
+  }
   return !error;
 }

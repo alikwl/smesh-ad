@@ -130,9 +130,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 <script>
   import { supabase, triggerDeploy } from '../lib/supabase';
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    
-    // 1. Last Deployed State
+  // 1. Last Deployed State
     const updateLastDeployedText = () => {
       const stamp = localStorage.getItem('last_deployed');
       const els = document.querySelectorAll('.last-deployed-text');
@@ -167,7 +165,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         const { count: leadsCount } = await supabase
           .from('resource_leads')
           .select('*', { count: 'exact', head: true })
-          .gt('unlocked_at', oneWeekAgo.toISOString());
+          .gt('created_at', oneWeekAgo.toISOString());
         
         const leadsContainer = document.getElementById('stat-leads-week');
         if (leadsContainer) leadsContainer.textContent = String(leadsCount || 0);
@@ -193,7 +191,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
       try {
         const { data: contacts, error } = await supabase
           .from('contact_submissions')
-          .select('name, whatsapp, budget, created_at')
+          .select('name, whatsapp, budget, service, page_url, created_at')
           .order('created_at', { ascending: false })
           .limit(5);
 
@@ -212,9 +210,16 @@ import AdminLayout from '../layouts/AdminLayout.astro';
           const date = c.created_at 
             ? new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
             : 'N/A';
+          const detailsText = [c.service, c.page_url].filter(Boolean).join(' • ');
+          const detailsHtml = detailsText 
+            ? `<div class="text-[9px] font-normal text-slate-450 mt-0.5 max-w-[200px] truncate" title="${detailsText}">${detailsText}</div>`
+            : '';
           return `
             <tr class="hover:bg-slate-50/50 transition-colors">
-              <td class="px-5 py-3.5 font-bold text-slate-900">${c.name || 'Anonymous'}</td>
+              <td class="px-5 py-3.5 font-bold text-slate-900">
+                ${c.name || 'Anonymous'}
+                ${detailsHtml}
+              </td>
               <td class="px-5 py-3.5 text-slate-600 font-mono">${c.whatsapp || 'N/A'}</td>
               <td class="px-5 py-3.5 text-slate-655 font-semibold">${c.budget || 'N/A'}</td>
               <td class="px-5 py-3.5 text-right text-slate-450">${date}</td>
@@ -294,6 +299,5 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     });
 
     // Run fetches
-    await Promise.all([loadStats(), loadRecentSubmissions()]);
-  });
+    Promise.all([loadStats(), loadRecentSubmissions()]);
 </script>

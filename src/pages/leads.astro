@@ -72,6 +72,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
               <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">WhatsApp</th>
               <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Budget</th>
               <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Service Type</th>
+              <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Source Page</th>
               <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20">Project Brief</th>
               <th class="px-6 py-3.5 font-bold uppercase tracking-wider text-slate-450 text-[10px] border-b-2 border-emerald-500/20 text-right">Submitted At</th>
             </tr>
@@ -198,10 +199,10 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         `;
       } else {
         leadsBody.innerHTML = leadsData.map(l => {
-          const date = l.unlocked_at 
-            ? new Date(l.unlocked_at).toLocaleString() 
+          const date = l.created_at 
+            ? new Date(l.created_at).toLocaleString() 
             : 'N/A';
-          const title = resourceMap[l.slug] || l.slug;
+          const title = resourceMap[l.resource_slug] || l.resource_slug;
           return `
             <tr class="hover:bg-slate-50/70 transition-colors">
               <td class="px-6 py-4 text-slate-900 font-bold select-text">${l.email}</td>
@@ -216,7 +217,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
       if (contactsData.length === 0) {
         contactsBody.innerHTML = `
           <tr>
-            <td colspan="6" class="px-6 py-12 text-center text-slate-400">No contact submissions captured yet.</td>
+            <td colspan="7" class="px-6 py-12 text-center text-slate-400">No contact submissions captured yet.</td>
           </tr>
         `;
       } else {
@@ -240,6 +241,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
               <td class="px-6 py-4 text-slate-600 font-mono select-text">${c.whatsapp || 'N/A'}</td>
               <td class="px-6 py-4 text-slate-655 font-semibold">${c.budget || 'N/A'}</td>
               <td class="px-6 py-4 text-slate-500 font-medium">${c.service || 'N/A'}</td>
+              <td class="px-6 py-4 text-slate-500 select-text">${c.page_url || 'Direct'}</td>
               <td class="px-6 py-4">${briefHtml}</td>
               <td class="px-6 py-4 text-right text-slate-450">${date}</td>
             </tr>
@@ -296,14 +298,14 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 
       if (activeTab === 'leads') {
         csvContent = "Email,Resource Slug,Unlocked At\n" + 
-          leadsData.map(l => `"${l.email}","${l.slug}","${l.unlocked_at}"`).join("\n");
+          leadsData.map(l => `"${l.email}","${l.resource_slug}","${l.created_at}"`).join("\n");
         filename = "resource_leads_export.csv";
       } else {
-        csvContent = "Name,WhatsApp,Budget,Service,Submitted At,Brief\n" + 
+        csvContent = "Name,WhatsApp,Budget,Service,Source Page,Submitted At,Brief\n" + 
           contactsData.map(c => {
             // Escape quotes inside fields
             const cleanBrief = (c.message || '').replace(/"/g, '""');
-            return `"${c.name || ''}","${c.whatsapp || ''}","${c.budget || ''}","${c.service || ''}","${c.created_at}","${cleanBrief}"`;
+            return `"${c.name || ''}","${c.whatsapp || ''}","${c.budget || ''}","${c.service || ''}","${c.page_url || 'Direct'}","${c.created_at}","${cleanBrief}"`;
           }).join("\n");
         filename = "contact_submissions_export.csv";
       }

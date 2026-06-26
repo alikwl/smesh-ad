@@ -140,86 +140,84 @@ const navLinks = [
   <script>
     import { signOut, triggerDeploy } from '../lib/supabase';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // 1. Sidebar Toggle handlers for Mobile
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      const openBtn = document.getElementById('sidebar-toggle-btn');
-      const closeBtn = document.getElementById('sidebar-close-btn');
+    // 1. Sidebar Toggle handlers for Mobile
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const openBtn = document.getElementById('sidebar-toggle-btn');
+    const closeBtn = document.getElementById('sidebar-close-btn');
 
-      const toggleSidebar = (isOpen: boolean) => {
-        if (!sidebar || !overlay) return;
-        if (isOpen) {
-          sidebar.classList.remove('-translate-x-full');
-          overlay.classList.remove('hidden');
-        } else {
-          sidebar.classList.add('-translate-x-full');
-          overlay.classList.add('hidden');
-        }
-      };
+    const toggleSidebar = (isOpen: boolean) => {
+      if (!sidebar || !overlay) return;
+      if (isOpen) {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      }
+    };
 
-      openBtn?.addEventListener('click', () => toggleSidebar(true));
-      closeBtn?.addEventListener('click', () => toggleSidebar(false));
-      overlay?.addEventListener('click', () => toggleSidebar(false));
+    openBtn?.addEventListener('click', () => toggleSidebar(true));
+    closeBtn?.addEventListener('click', () => toggleSidebar(false));
+    overlay?.addEventListener('click', () => toggleSidebar(false));
 
-      // 2. Sign Out Handler
-      const signoutBtn = document.getElementById('signout-btn');
-      signoutBtn?.addEventListener('click', async () => {
-        if (confirm('Are you sure you want to sign out?')) {
-          await signOut();
-        }
-      });
+    // 2. Sign Out Handler
+    const signoutBtn = document.getElementById('signout-btn');
+    signoutBtn?.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to sign out?')) {
+        await signOut();
+      }
+    });
 
-      // 3. Deploy Handler
-      const deployBtn = document.getElementById('deploy-btn') as HTMLButtonElement | null;
-      const deployText = document.getElementById('deploy-text');
-      const deploySpinner = document.getElementById('deploy-spinner');
+    // 3. Deploy Handler
+    const deployBtn = document.getElementById('deploy-btn') as HTMLButtonElement | null;
+    const deployText = document.getElementById('deploy-text');
+    const deploySpinner = document.getElementById('deploy-spinner');
 
-      deployBtn?.addEventListener('click', async () => {
-        if (!deployBtn || !deployText || !deploySpinner) return;
+    deployBtn?.addEventListener('click', async () => {
+      if (!deployBtn || !deployText || !deploySpinner) return;
 
-        // Loading state
-        deployBtn.disabled = true;
-        deployText.textContent = 'Deploying...';
-        deploySpinner.classList.remove('hidden');
-        deployBtn.classList.remove('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
-        deployBtn.classList.add('bg-slate-700');
+      // Loading state
+      deployBtn.disabled = true;
+      deployText.textContent = 'Deploying...';
+      deploySpinner.classList.remove('hidden');
+      deployBtn.classList.remove('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+      deployBtn.classList.add('bg-slate-700');
 
-        try {
-          const success = await triggerDeploy();
-          if (success) {
-            // Success Feedback
-            deployText.textContent = '✓ Build triggered!';
-            deploySpinner.classList.add('hidden');
-            deployBtn.classList.remove('bg-slate-700');
-            deployBtn.classList.add('bg-emerald-600');
-
-            setTimeout(() => {
-              // Revert back
-              deployBtn.disabled = false;
-              deployText.textContent = '🚀 Deploy Site';
-              deployBtn.classList.remove('bg-emerald-600');
-              deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
-            }, 3000);
-          } else {
-            throw new Error('Deploy request failed');
-          }
-        } catch (e) {
-          console.error(e);
-          // Error Feedback
-          deployText.textContent = 'Failed. Try again';
+      try {
+        const success = await triggerDeploy();
+        if (success) {
+          // Success Feedback
+          deployText.textContent = '✓ Build triggered!';
           deploySpinner.classList.add('hidden');
           deployBtn.classList.remove('bg-slate-700');
-          deployBtn.classList.add('bg-rose-600');
+          deployBtn.classList.add('bg-emerald-600');
 
           setTimeout(() => {
+            // Revert back
             deployBtn.disabled = false;
             deployText.textContent = '🚀 Deploy Site';
-            deployBtn.classList.remove('bg-rose-600');
+            deployBtn.classList.remove('bg-emerald-600');
             deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
           }, 3000);
+        } else {
+          throw new Error('Deploy request failed');
         }
-      });
+      } catch (e) {
+        console.error(e);
+        // Error Feedback
+        deployText.textContent = 'Failed. Try again';
+        deploySpinner.classList.add('hidden');
+        deployBtn.classList.remove('bg-slate-700');
+        deployBtn.classList.add('bg-rose-600');
+
+        setTimeout(() => {
+          deployBtn.disabled = false;
+          deployText.textContent = '🚀 Deploy Site';
+          deployBtn.classList.remove('bg-rose-600');
+          deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+        }, 3000);
+      }
     });
   </script>
 </body>
