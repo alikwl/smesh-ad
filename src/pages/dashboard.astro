@@ -120,6 +120,19 @@ import AdminLayout from '../layouts/AdminLayout.astro';
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </button>
+
+        <!-- Big Trigger Local Sync Button -->
+        <button 
+          id="dashboard-sync-btn" 
+          class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-md select-none mt-3"
+        >
+          <span id="dashboard-sync-text">🔄 Sync Local Data</span>
+          <!-- Spinner -->
+          <svg id="dashboard-sync-spinner" class="hidden animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
       </div>
 
     </div>
@@ -294,6 +307,62 @@ import AdminLayout from '../layouts/AdminLayout.astro';
           deployText.textContent = '🚀 Deploy Site';
           deployBtn.classList.remove('bg-rose-600');
           deployBtn.classList.add('bg-[#1D9E75]', 'hover:bg-[#0F6E56]');
+        }, 3000);
+      }
+    });
+
+    // 5. Local Sync Button Handler
+    const syncBtn = document.getElementById('dashboard-sync-btn') as HTMLButtonElement | null;
+    const syncText = document.getElementById('dashboard-sync-text');
+    const syncSpinner = document.getElementById('dashboard-sync-spinner');
+
+    syncBtn?.addEventListener('click', async () => {
+      if (!syncBtn || !syncText || !syncSpinner) return;
+
+      // Disable buttons to avoid conflicts
+      syncBtn.disabled = true;
+      if (deployBtn) deployBtn.disabled = true;
+
+      // Loading state
+      syncText.textContent = 'Syncing...';
+      syncSpinner.classList.remove('hidden');
+      syncBtn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
+      syncBtn.classList.add('bg-slate-700');
+
+      try {
+        const response = await fetch('/api/sync-local', { method: 'POST' });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // Success feedback
+          syncText.textContent = '✓ Sync Complete!';
+          syncSpinner.classList.add('hidden');
+          syncBtn.classList.remove('bg-slate-700');
+          syncBtn.classList.add('bg-emerald-600');
+
+          setTimeout(() => {
+            syncBtn.disabled = false;
+            if (deployBtn) deployBtn.disabled = false;
+            syncText.textContent = '🔄 Sync Local Data';
+            syncBtn.classList.remove('bg-emerald-600');
+            syncBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
+          }, 3000);
+        } else {
+          throw new Error(result.message || 'Sync failed');
+        }
+      } catch (e: any) {
+        console.error(e);
+        syncText.textContent = 'Sync Failed';
+        syncSpinner.classList.add('hidden');
+        syncBtn.classList.remove('bg-slate-700');
+        syncBtn.classList.add('bg-rose-600');
+
+        setTimeout(() => {
+          syncBtn.disabled = false;
+          if (deployBtn) deployBtn.disabled = false;
+          syncText.textContent = '🔄 Sync Local Data';
+          syncBtn.classList.remove('bg-rose-600');
+          syncBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
         }, 3000);
       }
     });
