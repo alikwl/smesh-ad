@@ -1,22 +1,9 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { supabase } from '../../lib/supabase';
-
-export async function getStaticPaths() {
-  const { data } = await supabase
-    .from('portfolio')
-    .select('id');
-  
-  return (data || []).map((p) => ({
-    params: { id: p.id }
-  }));
-}
-
-const { id } = Astro.params;
 ---
 
 <AdminLayout title="Edit Case Study" activeSection="portfolio">
-  <div class="space-y-6 font-sans pb-24 relative" id="edit-portfolio-root" data-id={id}>
+  <div class="space-y-6 font-sans pb-24 relative" id="edit-portfolio-root">
     
     <div class="flex items-center justify-between">
       <div>
@@ -261,7 +248,17 @@ const { id } = Astro.params;
 
     if (!root || !form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel || !loadingOverlay) return;
 
-    const id = root.getAttribute('data-id') || '';
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id') || '';
+
+    if (!id) {
+      loadingOverlay.innerHTML = `
+        <div class="text-rose-600 font-semibold bg-rose-50 border border-rose-100 py-4 px-6 rounded-xl inline-block">
+          Error: No case study ID specified in URL query params (?id=...).
+        </div>
+      `;
+      return;
+    }
 
     // 1. Fetch Existing Data
     const loadData = async () => {
