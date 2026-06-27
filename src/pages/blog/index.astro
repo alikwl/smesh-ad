@@ -351,17 +351,19 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         seo_description: parsedPayload.seo_description || null,
         faq_schema: parsedPayload.faq_schema || null,
         featured: !!parsedPayload.featured,
-        published: !!parsedPayload.published,
+        published: parsedPayload.published !== undefined ? !!parsedPayload.published : (parsedPayload.status === 'published'),
         reading_time: parsedPayload.reading_time !== undefined ? Number(parsedPayload.reading_time) : 5,
         word_count: parsedPayload.word_count !== undefined ? Number(parsedPayload.word_count) : null,
         related_case_study_slug: parsedPayload.related_case_study_slug || null,
-        author_name: "Haider Ali",
-        author_bio: "Haider Ali is an expert automation engineer specializing in building custom n8n pipelines, designing relational Supabase databases, training RAG-powered support chatbots, and building high-speed static websites for businesses across Pakistan and internationally.",
-        author_avatar: "/assets/images/resources/author-haider-ali.webp",
-        status: parsedPayload.published ? "published" : "draft",
+        canonical_url: parsedPayload.canonical_url || null,
+        og_image: parsedPayload.og_image || null,
+        author_name: parsedPayload.author_name || "Haider Ali",
+        author_bio: parsedPayload.author_bio || "Haider Ali is an expert automation engineer specializing in building custom n8n pipelines, designing relational Supabase databases, training RAG-powered support chatbots, and building high-speed static websites for businesses across Pakistan and internationally.",
+        author_avatar: parsedPayload.author_avatar || "/assets/images/resources/author-haider-ali.webp",
+        status: parsedPayload.status || (parsedPayload.published ? "published" : "draft"),
         updated_at: now,
         last_modified: now,
-        published_at: parsedPayload.published ? now : null
+        published_at: parsedPayload.published_at || (parsedPayload.published ? now : null)
       };
 
       try {

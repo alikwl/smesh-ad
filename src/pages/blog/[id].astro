@@ -54,27 +54,40 @@ const { id } = Astro.params;
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-1">
           <label for="post-slug" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">URL Slug</label>
-          <input 
-            type="text" 
-            id="post-slug" 
-            required 
-            placeholder="auto-generated-from-title" 
-            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
-          />
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="post-slug" 
+              required 
+              placeholder="auto-generated-from-title" 
+              class="flex-1 h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+            />
+            <button 
+              type="button" 
+              id="generate-slug-btn" 
+              class="px-4 h-11 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+            >
+              Generate
+            </button>
+          </div>
         </div>
         <div class="space-y-1">
           <label for="post-category" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</label>
-          <input 
-            type="text" 
+          <select 
             id="post-category" 
             required 
-            placeholder="e.g. Automation, Databases, Websites" 
             class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
-          />
+          >
+            <option value="Automation">Automation</option>
+            <option value="Development">Development</option>
+            <option value="Business">Business</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
       </div>
 
-      <!-- Row 3: SEO Title & SEO Description -->
+      <!-- Row 3: SEO Title Tag & SEO Description -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-1">
           <label for="post-seo-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SEO Title Tag (Google Search Headline)</label>
@@ -86,11 +99,11 @@ const { id } = Astro.params;
           />
         </div>
         <div class="space-y-1">
-          <label for="post-seo-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SEO Meta Description (Max 155 chars)</label>
+          <label for="post-seo-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">SEO Meta Description</label>
           <input 
             type="text" 
             id="post-seo-desc" 
-            placeholder="Brief summary of this article..." 
+            placeholder="Google search snippet..." 
             class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
           />
         </div>
@@ -122,7 +135,7 @@ const { id } = Astro.params;
         </div>
       </div>
 
-      <!-- Row 4: Tags & Cover Image URL -->
+      <!-- Row 4: Tags & Cover Image URL/Alt -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-1">
           <label for="post-tags" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tags (comma-separated)</label>
@@ -134,27 +147,102 @@ const { id } = Astro.params;
           />
         </div>
         <div class="space-y-1">
-          <label for="post-cover" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Image URL</label>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label for="post-cover" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Image URL</label>
+              <input 
+                type="text" 
+                id="post-cover" 
+                placeholder="/assets/images/blog/cover-file.webp" 
+                class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+              />
+            </div>
+            <div class="space-y-1">
+              <label for="post-cover-alt" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Image Alt</label>
+              <input 
+                type="text" 
+                id="post-cover-alt" 
+                placeholder="Description of the cover image" 
+                class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4.8: Related Case Study Slug & Reading Time -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="post-related-case-study" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Related Case Study Slug (optional)</label>
           <input 
             type="text" 
-            id="post-cover" 
-            placeholder="/assets/images/blog/cover-file.webp" 
+            id="post-related-case-study" 
+            placeholder="agency-website-automation" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+          <p class="text-[10px] text-slate-450 font-light mt-0.5">Agar is blog post ka related case study/portfolio hai to uska slug yahan daalo. Ye end mein "Strategic Case Study" box mein dikhayega.</p>
+        </div>
+        <div class="space-y-1">
+          <label for="post-reading-time" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Reading Time (minutes)</label>
+          <input 
+            type="number" 
+            id="post-reading-time" 
+            min="1"
+            value="5" 
             class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
           />
         </div>
       </div>
 
-      <!-- Row 4.5: FAQ Schema & Featured -->
+      <!-- Row 4.9: Author Info -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="md:col-span-2 space-y-1">
-          <label for="post-faq" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">FAQ Schema (JSON Array)</label>
+        <div class="space-y-1">
+          <label for="post-author-name" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Author Name</label>
+          <input 
+            type="text" 
+            id="post-author-name" 
+            value="Haider Ali"
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="post-author-avatar" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Author Avatar URL</label>
+          <input 
+            type="text" 
+            id="post-author-avatar" 
+            value="/assets/images/resources/author-haider-ali.webp"
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="post-author-bio" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Author Bio</label>
           <textarea 
-            id="post-faq" 
-            rows="3" 
-            placeholder='[{"question":"...","answer":"..."}]' 
-            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono"
-          ></textarea>
-          <p class="text-[10px] text-slate-400 font-light mt-0.5">Enter JSON array of FAQ objects</p>
+            id="post-author-bio" 
+            rows="1"
+            class="w-full p-3 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          >Haider Ali is an expert automation engineer specializing in building custom n8n pipelines, designing relational Supabase databases, training RAG-powered support chatbots, and building high-speed static websites for businesses across Pakistan and internationally.</textarea>
+        </div>
+      </div>
+
+      <!-- Row 4.95: Status, Featured & Published At -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="space-y-1">
+          <label for="post-status" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</label>
+          <select 
+            id="post-status" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-semibold text-slate-700"
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label for="post-published-at" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Published At</label>
+          <input 
+            type="datetime-local" 
+            id="post-published-at" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 text-slate-750"
+          />
         </div>
         <div class="flex items-center">
           <div class="flex items-center gap-2 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50 w-full select-none font-sans mt-3.5">
@@ -168,16 +256,16 @@ const { id } = Astro.params;
         </div>
       </div>
 
-      <!-- Row 4.8: Related Case Study Slug -->
+      <!-- Row 4.98: FAQ Schema (JSON Array) -->
       <div class="space-y-1">
-        <label for="post-related-case-study" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Related Case Study Slug (optional)</label>
-        <input 
-          type="text" 
-          id="post-related-case-study" 
-          placeholder="agency-website-automation" 
-          class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
-        />
-        <p class="text-[10px] text-slate-450 font-light mt-0.5">Agar is blog post ka related case study/portfolio hai to uska slug yahan daalo. Ye end mein "Strategic Case Study" box mein dikhayega.</p>
+        <label for="post-faq" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">FAQ Schema (JSON Array)</label>
+        <textarea 
+          id="post-faq" 
+          rows="3" 
+          placeholder='[{"question":"...","answer":"..."}]' 
+          class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono"
+        ></textarea>
+        <p class="text-[10px] text-slate-455 font-light mt-0.5">Enter JSON array of FAQ objects</p>
       </div>
 
       <!-- Row 5: Excerpt -->
@@ -239,6 +327,15 @@ const { id } = Astro.params;
       </a>
 
       <div class="flex items-center gap-3">
+        <!-- Export as JSON Button -->
+        <button 
+          type="button" 
+          id="export-btn"
+          class="h-10 px-4 border border-slate-200 hover:border-slate-800 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5"
+        >
+          <i class="ti ti-download text-xs"></i> Export as JSON
+        </button>
+
         <!-- Save as Draft Button -->
         <button 
           type="button" 
@@ -262,9 +359,9 @@ const { id } = Astro.params;
     <!-- Success Toast Popups -->
     <div 
       id="save-toast" 
-      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold font-sans"
+      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold font-sans"
     >
-      <i class="ti ti-check text-sm"></i>
+      <i class="ti ti-check text-emerald-500 text-sm"></i>
       <span>Saved!</span>
     </div>
 
@@ -282,7 +379,8 @@ const { id } = Astro.params;
     const form = document.getElementById('post-editor-form') as HTMLFormElement | null;
     const titleInput = document.getElementById('post-title') as HTMLInputElement | null;
     const slugInput = document.getElementById('post-slug') as HTMLInputElement | null;
-    const categoryInput = document.getElementById('post-category') as HTMLInputElement | null;
+    const generateSlugBtn = document.getElementById('generate-slug-btn');
+    const categoryInput = document.getElementById('post-category') as HTMLSelectElement | null;
     const seoTitleInput = document.getElementById('post-seo-title') as HTMLInputElement | null;
     const seoDescInput = document.getElementById('post-seo-desc') as HTMLInputElement | null;
     const metaTitleInput = document.getElementById('post-meta-title') as HTMLInputElement | null;
@@ -292,9 +390,16 @@ const { id } = Astro.params;
     const featuredInput = document.getElementById('post-featured') as HTMLInputElement | null;
     const tagsInput = document.getElementById('post-tags') as HTMLInputElement | null;
     const coverInput = document.getElementById('post-cover') as HTMLInputElement | null;
+    const coverAltInput = document.getElementById('post-cover-alt') as HTMLInputElement | null;
     const excerptInput = document.getElementById('post-excerpt') as HTMLTextAreaElement | null;
     const contentInput = document.getElementById('post-content') as HTMLTextAreaElement | null;
     const relatedCaseStudyInput = document.getElementById('post-related-case-study') as HTMLInputElement | null;
+    const readingTimeInput = document.getElementById('post-reading-time') as HTMLInputElement | null;
+    const authorNameInput = document.getElementById('post-author-name') as HTMLInputElement | null;
+    const authorAvatarInput = document.getElementById('post-author-avatar') as HTMLInputElement | null;
+    const authorBioInput = document.getElementById('post-author-bio') as HTMLTextAreaElement | null;
+    const statusInput = document.getElementById('post-status') as HTMLSelectElement | null;
+    const publishedAtInput = document.getElementById('post-published-at') as HTMLInputElement | null;
 
     const previewToggle = document.getElementById('preview-toggle-btn');
     const container = document.getElementById('editor-preview-container');
@@ -304,6 +409,7 @@ const { id } = Astro.params;
 
     const draftBtn = document.getElementById('draft-btn') as HTMLButtonElement | null;
     const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+    const exportBtn = document.getElementById('export-btn');
 
     if (!root || !form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel || !loadingOverlay) return;
 
@@ -332,7 +438,9 @@ const { id } = Astro.params;
       // Populate Form Fields
       titleInput.value = post.title || '';
       slugInput.value = post.slug || '';
-      categoryInput.value = post.category || '';
+      if (categoryInput) {
+        categoryInput.value = post.category || 'Automation';
+      }
       seoTitleInput.value = post.seo_title || '';
       seoDescInput.value = post.seo_description || '';
       if (metaTitleInput) metaTitleInput.value = post.meta_title || '';
@@ -348,10 +456,29 @@ const { id } = Astro.params;
       }
       tagsInput.value = (post.tags || []).join(', ');
       coverInput.value = post.cover_image || '';
+      if (coverAltInput) coverAltInput.value = post.cover_image_alt || '';
       excerptInput.value = post.excerpt || '';
       contentInput.value = post.content || '';
       if (relatedCaseStudyInput) {
         relatedCaseStudyInput.value = post.related_case_study_slug || '';
+      }
+      if (readingTimeInput) {
+        readingTimeInput.value = String(post.reading_time || 5);
+      }
+      if (authorNameInput) authorNameInput.value = post.author_name || 'Haider Ali';
+      if (authorAvatarInput) authorAvatarInput.value = post.author_avatar || '/assets/images/resources/author-haider-ali.webp';
+      if (authorBioInput) authorBioInput.value = post.author_bio || '';
+      if (statusInput) {
+        statusInput.value = post.status || (post.published ? 'published' : 'draft');
+      }
+      if (publishedAtInput) {
+        if (post.published_at) {
+          const dateVal = new Date(post.published_at);
+          dateVal.setMinutes(dateVal.getMinutes() - dateVal.getTimezoneOffset());
+          publishedAtInput.value = dateVal.toISOString().slice(0, 16);
+        } else {
+          publishedAtInput.value = '';
+        }
       }
 
       // Reveal form
@@ -364,17 +491,24 @@ const { id } = Astro.params;
     };
 
     // 2. Slug auto-generation guard
-    let isSlugEdited = true; // For editing, keep auto-generation disabled by default unless manually empty
+    let isSlugEdited = true;
     slugInput.addEventListener('input', () => {
       isSlugEdited = true;
     });
 
+    const generateSlug = () => {
+      slugInput.value = titleInput.value
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-');
+    };
+
+    generateSlugBtn?.addEventListener('click', generateSlug);
+
     titleInput.addEventListener('input', () => {
       if (!isSlugEdited || !slugInput.value) {
-        slugInput.value = titleInput.value
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-');
+        generateSlug();
       }
     });
 
@@ -442,12 +576,15 @@ const { id } = Astro.params;
         publishBtn.disabled = true;
       }
 
+      if (statusInput) {
+        statusInput.value = publishState ? 'published' : 'draft';
+      }
+
       const tags = (tagsInput?.value || '')
         .split(',')
         .map(t => t.trim())
         .filter(Boolean);
 
-      // Validate FAQ Schema JSON
       let faq_schema = null;
       let isValidFaq = true;
       const faqVal = faqInput?.value.trim() || '';
@@ -466,10 +603,21 @@ const { id } = Astro.params;
         }
       }
 
+      const nowStr = new Date().toISOString();
+      let published_at = publishedAtInput?.value ? new Date(publishedAtInput.value).toISOString() : null;
+      if (publishState && !published_at) {
+        published_at = nowStr;
+        if (publishedAtInput) {
+          const localNow = new Date();
+          localNow.setMinutes(localNow.getMinutes() - localNow.getTimezoneOffset());
+          publishedAtInput.value = localNow.toISOString().slice(0, 16);
+        }
+      }
+
       const payload: any = {
         title,
         slug,
-        category: categoryInput?.value.trim() || 'Uncategorized',
+        category: categoryInput?.value || 'Automation',
         seo_title: seoTitleInput?.value.trim() || title,
         seo_description: seoDescInput?.value.trim() || excerptInput?.value.trim() || '',
         meta_title: metaTitleInput?.value.trim() || null,
@@ -477,10 +625,18 @@ const { id } = Astro.params;
         featured: featuredInput ? featuredInput.checked : false,
         tags,
         cover_image: coverInput?.value.trim() || '',
+        cover_image_alt: coverAltInput?.value.trim() || null,
         excerpt: excerptInput?.value.trim() || '',
         content: contentInput.value,
         published: publishState,
         related_case_study_slug: relatedCaseStudyInput?.value.trim() || null,
+        reading_time: readingTimeInput?.value ? Number(readingTimeInput.value) : 5,
+        author_name: authorNameInput?.value.trim() || 'Haider Ali',
+        author_avatar: authorAvatarInput?.value.trim() || '/assets/images/resources/author-haider-ali.webp',
+        author_bio: authorBioInput?.value.trim() || '',
+        status: publishState ? 'published' : 'draft',
+        published_at,
+        last_modified: nowStr
       };
 
       if (isValidFaq) {
@@ -524,22 +680,71 @@ const { id } = Astro.params;
     draftBtn.addEventListener('click', () => savePost(false));
     publishBtn.addEventListener('click', () => savePost(true));
 
-    // 5. Auto-save Runner
-    let lastContent = '';
-    let lastTitle = '';
+    // 5. Export Post as JSON
+    exportBtn?.addEventListener('click', () => {
+      const title = titleInput.value.trim();
+      const slug = slugInput.value.trim();
+
+      const tags = (tagsInput?.value || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      let faq_schema = null;
+      try {
+        faq_schema = faqInput?.value.trim() ? JSON.parse(faqInput.value.trim()) : null;
+      } catch (e) {}
+
+      const exportData = {
+        title,
+        slug,
+        category: categoryInput?.value || 'Automation',
+        seo_title: seoTitleInput?.value.trim() || title,
+        seo_description: seoDescInput?.value.trim() || excerptInput?.value.trim() || '',
+        meta_title: metaTitleInput?.value.trim() || null,
+        meta_description: metaDescInput?.value.trim() || null,
+        featured: !!featuredInput?.checked,
+        tags,
+        cover_image: coverInput?.value.trim() || '',
+        cover_image_alt: coverAltInput?.value.trim() || null,
+        excerpt: excerptInput?.value.trim() || '',
+        content: contentInput.value,
+        published: statusInput?.value === 'published',
+        faq_schema,
+        related_case_study_slug: relatedCaseStudyInput?.value.trim() || null,
+        reading_time: readingTimeInput?.value ? Number(readingTimeInput.value) : 5,
+        author_name: authorNameInput?.value.trim() || 'Haider Ali',
+        author_avatar: authorAvatarInput?.value.trim() || '/assets/images/resources/author-haider-ali.webp',
+        author_bio: authorBioInput?.value.trim() || '',
+        status: statusInput?.value || 'draft',
+        published_at: publishedAtInput?.value ? new Date(publishedAtInput.value).toISOString() : null
+      };
+
+      const jsonStr = JSON.stringify(exportData, null, 2);
+      navigator.clipboard.writeText(jsonStr).then(() => showToast('Exported & copied!'));
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${slug || 'blog-post'}-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // 6. 30-Seconds Auto-save runner
+    let lastContent = contentInput.value;
+    let lastTitle = titleInput.value;
 
     setInterval(async () => {
-      // Don't auto-save if form is still loading
-      if (form.classList.contains('hidden')) return;
-
       if (contentInput.value !== lastContent || titleInput.value !== lastTitle) {
         lastContent = contentInput.value;
         lastTitle = titleInput.value;
-        await savePost(false, true); // save silently as draft
+        await savePost(false, true); 
       }
     }, 30000);
 
-    // Run fetch
     await loadPostData();
   });
 </script>
