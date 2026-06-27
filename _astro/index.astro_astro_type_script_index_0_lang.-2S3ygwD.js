@@ -32,7 +32,7 @@ import{s as c,h as b,t as p,j as x}from"./supabase.M5dTTGS6.js";document.addEven
                 ${a}
               </button>
               <a 
-                href="/portfolio/${t.id}/"
+                href="/portfolio/edit/?id=${t.id}"
                 class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-[#1D9E75] hover:text-white hover:border-[#1D9E75] transition"
               >
                 Edit

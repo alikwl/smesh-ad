@@ -58,7 +58,7 @@ import{s as A,t as L,c as C,d as I,b as N}from"./supabase.M5dTTGS6.js";const S=`
                 ${_}
               </button>
               <a 
-                href="/blog/${e.id}/"
+                href="/blog/edit/?id=${e.id}"
                 class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-[#1D9E75] hover:text-white hover:border-[#1D9E75] transition"
               >
                 Edit
