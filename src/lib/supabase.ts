@@ -58,10 +58,11 @@ export async function getBlog(id: string) {
 }
 
 export async function saveBlog(blog: any, id?: string) {
+  const now = new Date().toISOString();
   if (id) {
-    return await supabase.from('blog_posts').update({ ...blog, updated_at: new Date().toISOString() }).eq('id', id).select();
+    return await supabase.from('blog_posts').update({ ...blog, updated_at: now, last_modified: now }).eq('id', id).select();
   }
-  return await supabase.from('blog_posts').insert([{ ...blog, updated_at: new Date().toISOString() }]).select();
+  return await supabase.from('blog_posts').insert([{ ...blog, updated_at: now, last_modified: now }]).select();
 }
 
 export async function deleteBlog(id: string) {

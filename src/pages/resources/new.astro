@@ -95,15 +95,45 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         </div>
       </div>
 
-      <!-- Row 5: Premium Toggle (Checkbox) -->
-      <div class="flex items-center gap-6 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50 max-w-md select-none font-sans">
-        <div class="flex items-center gap-2">
+      <!-- Row 5: Premium Toggle & Published Checkbox -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl select-none font-sans">
+        <div class="flex items-center gap-2 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50">
           <input 
             type="checkbox" 
             id="res-premium" 
             class="h-4 w-4 rounded text-emerald-600 border-slate-350 focus:ring-[#1D9E75]/25"
           />
           <label for="res-premium" class="text-xs font-bold text-slate-800 cursor-pointer">Mark as Premium</label>
+        </div>
+        <div class="flex items-center gap-2 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50">
+          <input 
+            type="checkbox" 
+            id="res-published" 
+            class="h-4 w-4 rounded text-emerald-600 border-slate-350 focus:ring-[#1D9E75]/25"
+          />
+          <label for="res-published" class="text-xs font-bold text-slate-800 cursor-pointer">Published</label>
+        </div>
+      </div>
+
+      <!-- Row 5.5: CTA Headline & Subtext -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="res-cta-headline" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">CTA Headline</label>
+          <input 
+            type="text" 
+            id="res-cta-headline" 
+            placeholder="e.g. Download the Complete Automation Blueprint Now" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="res-cta-subtext" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">CTA Subtext</label>
+          <input 
+            type="text" 
+            id="res-cta-subtext" 
+            placeholder="e.g. Free checklist with 15+ prompts" 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
         </div>
       </div>
 
@@ -253,6 +283,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const serviceTagInput = document.getElementById('res-service-tag') as HTMLInputElement | null;
     const downloadUrlInput = document.getElementById('res-download-url') as HTMLInputElement | null;
     const premiumInput = document.getElementById('res-premium') as HTMLInputElement | null;
+    const publishedInput = document.getElementById('res-published') as HTMLInputElement | null;
+    const ctaHeadlineInput = document.getElementById('res-cta-headline') as HTMLInputElement | null;
+    const ctaSubtextInput = document.getElementById('res-cta-subtext') as HTMLInputElement | null;
     const descInput = document.getElementById('res-desc') as HTMLTextAreaElement | null;
     const excerptInput = document.getElementById('res-excerpt') as HTMLTextAreaElement | null;
     
@@ -371,6 +404,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         .map(l => l.trim())
         .filter(Boolean);
 
+      const isPublished = publishedInput ? publishedInput.checked : publishState;
+
       const payload = {
         title,
         slug,
@@ -381,7 +416,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         target_service_tag: serviceTagInput?.value.trim() || '',
         download_url: downloadUrlInput?.value.trim() || '',
         premium: premiumInput ? premiumInput.checked : false,
-        published: publishState,
+        cta_headline: ctaHeadlineInput?.value.trim() || '',
+        cta_subtext: ctaSubtextInput?.value.trim() || '',
+        published: isPublished,
         bullet_points,
         teaser_points,
         table_of_contents,
@@ -398,9 +435,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         }
 
         if (!silent) {
-          showToast(publishState ? 'Published successfully!' : 'Saved as draft!');
+          showToast(isPublished ? 'Published successfully!' : 'Saved as draft!');
           
-          if (publishState) {
+          if (isPublished) {
             await triggerDeploy();
           }
 
@@ -413,7 +450,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             autosaveIndicator.textContent = `Auto-saved at ${now}`;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to save resource:', err);
         if (!silent) {
           alert('Failed to save resource: ' + err.message);
@@ -427,8 +464,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       }
     };
 
-    draftBtn.addEventListener('click', () => saveForm(false));
-    publishBtn.addEventListener('click', () => saveForm(true));
+    draftBtn.addEventListener('click', () => {
+      if (publishedInput) publishedInput.checked = false;
+      saveForm(false);
+    });
+    publishBtn.addEventListener('click', () => {
+      if (publishedInput) publishedInput.checked = true;
+      saveForm(true);
+    });
 
     // 4. Auto-save Interval (30s)
     let lastContent = contentInput.value;

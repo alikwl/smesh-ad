@@ -11,12 +11,20 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Blog Posts</h1>
         <p class="text-xs text-slate-500 font-light mt-1">Manage, edit, publish, or delete your articles.</p>
       </div>
-      <a 
-        href="/blog/new/" 
-        class="inline-flex h-10 px-5 items-center justify-center rounded-xl bg-[#1D9E75] hover:bg-[#0F6E56] text-white text-xs font-bold transition shadow-sm cursor-pointer"
-      >
-        New Post &rarr;
-      </a>
+      <div class="flex items-center gap-3">
+        <button 
+          id="import-json-btn"
+          class="inline-flex h-10 px-5 items-center justify-center rounded-xl border border-slate-200 hover:border-slate-850 hover:bg-slate-50 text-slate-700 text-xs font-bold transition shadow-sm cursor-pointer"
+        >
+          Import from JSON
+        </button>
+        <a 
+          href="/blog/new/" 
+          class="inline-flex h-10 px-5 items-center justify-center rounded-xl bg-[#1D9E75] hover:bg-[#0F6E56] text-white text-xs font-bold transition shadow-sm cursor-pointer"
+        >
+          New Post &rarr;
+        </a>
+      </div>
     </div>
 
     <!-- Client-Side Rendered DataTable structure -->
@@ -49,6 +57,95 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       </table>
     </div>
 
+    <!-- JSON Import Modal Overlay -->
+    <div id="import-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs hidden p-4">
+      <div class="w-full max-w-2xl bg-[#0f1117] text-slate-350 border border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden font-sans">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-slate-800/80 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Import from JSON</h3>
+            <p class="text-[10px] text-slate-500 mt-0.5 font-light">Paste a JSON payload to instantly import a new entry.</p>
+          </div>
+          <button id="modal-close-x" class="text-slate-500 hover:text-white transition cursor-pointer p-1">
+            <i class="ti ti-x text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto space-y-4 flex-grow custom-scrollbar">
+          <!-- Textarea Input Area -->
+          <div id="modal-input-section" class="space-y-2">
+            <textarea
+              id="import-json-textarea"
+              rows="12"
+              class="w-full p-4 rounded-xl border border-slate-850 bg-slate-900/60 text-xs font-mono focus:border-emerald-600 focus:outline-none text-slate-200 leading-relaxed placeholder-slate-600 custom-scrollbar"
+            ></textarea>
+          </div>
+
+          <!-- Preview Area (Hidden by default) -->
+          <div id="modal-preview-section" class="hidden space-y-3">
+            <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Preview Data to Import</h4>
+            <div class="overflow-x-auto rounded-xl border border-slate-850 bg-slate-900/40">
+              <table class="w-full text-left text-[11px] border-collapse">
+                <thead>
+                  <tr class="bg-slate-950/60 border-b border-slate-850 text-slate-400">
+                    <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[9px] w-1/4">Field</th>
+                    <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[9px]">Value</th>
+                  </tr>
+                </thead>
+                <tbody id="preview-table-body" class="divide-y divide-slate-850/60 text-slate-300">
+                  <!-- dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Validation Error Message (Hidden by default) -->
+          <div id="modal-error-alert" class="hidden p-4 rounded-xl border border-rose-900/50 bg-rose-950/20 text-rose-400 text-[11px] font-medium leading-relaxed">
+            <div class="flex gap-2">
+              <i class="ti ti-alert-circle text-xs shrink-0 mt-0.5"></i>
+              <span id="modal-error-text">JSON validation failed.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-6 border-t border-slate-800/80 bg-slate-950/40 flex items-center justify-between">
+          <button 
+            id="modal-cancel-btn" 
+            class="h-10 px-5 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-slate-400 font-bold rounded-xl text-xs transition cursor-pointer"
+          >
+            Cancel
+          </button>
+
+          <div class="flex items-center gap-3">
+            <button 
+              id="modal-preview-btn" 
+              class="h-10 px-5 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
+            >
+              Parse & Preview
+            </button>
+            <button 
+              id="modal-confirm-btn" 
+              disabled
+              class="h-10 px-5 bg-[#1D9E75] hover:bg-[#0F6E56] disabled:opacity-40 disabled:hover:bg-[#1D9E75] text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-sm"
+            >
+              Confirm Import
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Toast Popup -->
+    <div 
+      id="import-toast" 
+      class="fixed bottom-20 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-500 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold"
+    >
+      <i class="ti ti-check text-sm"></i>
+      <span id="import-toast-text">Imported successfully!</span>
+    </div>
+
   </div>
 </AdminLayout>
 
@@ -56,9 +153,247 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <script>
   import { supabase, getBlogs, deleteBlog, saveBlog, triggerDeploy } from '../../lib/supabase';
 
+  const BLOG_JSON_TEMPLATE = `{
+  "title": "Your Blog Post Title",
+  "slug": "your-blog-post-slug",
+  "category": "Automation",
+  "excerpt": "Short teaser paragraph...",
+  "content": "## Heading\\n\\nFull markdown content...",
+  "tags": ["n8n", "automation"],
+  "cover_image": "/assets/images/blog/image.webp",
+  "cover_image_alt": "Image description",
+  "meta_title": "SEO Title Here",
+  "meta_description": "Under 155 chars...",
+  "seo_title": "Google Search Headline",
+  "seo_description": "Google search snippet...",
+  "faq_schema": [
+    {"question": "Q1?", "answer": "A1."}
+  ],
+  "featured": false,
+  "published": true,
+  "reading_time": 5,
+  "word_count": 500,
+  "related_case_study_slug": "agency-website-automation"
+}`;
+
+  function validateBlogJSON(data: any) {
+    const errors = [];
+    if (!data || typeof data !== 'object') {
+      errors.push('JSON must be an object.');
+      return errors;
+    }
+    if (!data.title || typeof data.title !== 'string' || !data.title.trim()) {
+      errors.push('Field "title" is required and must be a non-empty string.');
+    }
+    if (!data.slug || typeof data.slug !== 'string' || !data.slug.trim()) {
+      errors.push('Field "slug" is required and must be a non-empty string.');
+    } else if (!/^[a-z0-9-_]+$/.test(data.slug)) {
+      errors.push('Field "slug" can only contain lowercase letters, numbers, hyphens, and underscores.');
+    }
+    if (!data.content || typeof data.content !== 'string' || !data.content.trim()) {
+      errors.push('Field "content" is required and must be a non-empty string.');
+    }
+    if (data.tags !== undefined && !Array.isArray(data.tags)) {
+      errors.push('Field "tags" must be an array of strings.');
+    } else if (Array.isArray(data.tags) && !data.tags.every((t: any) => typeof t === 'string')) {
+      errors.push('All items in "tags" array must be strings.');
+    }
+    if (data.meta_description !== undefined && typeof data.meta_description === 'string' && data.meta_description.length > 155) {
+      errors.push('Field "meta_description" must be 155 characters or less.');
+    }
+    if (data.faq_schema !== undefined && !Array.isArray(data.faq_schema)) {
+      errors.push('Field "faq_schema" must be a JSON array.');
+    } else if (Array.isArray(data.faq_schema)) {
+      data.faq_schema.forEach((faq: any, i: number) => {
+        if (!faq || typeof faq !== 'object' || typeof faq.question !== 'string' || typeof faq.answer !== 'string') {
+          errors.push(`FAQ Schema item at index ${i} must have "question" and "answer" properties as strings.`);
+        }
+      });
+    }
+    return errors;
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('blog-table-body');
     if (!tbody) return;
+
+    // Modal & JSON Import Elements
+    const importJsonBtn = document.getElementById('import-json-btn');
+    const importModal = document.getElementById('import-modal');
+    const modalCloseX = document.getElementById('modal-close-x');
+    const importJsonTextarea = document.getElementById('import-json-textarea') as HTMLTextAreaElement | null;
+    const modalPreviewBtn = document.getElementById('modal-preview-btn');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn') as HTMLButtonElement | null;
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalErrorAlert = document.getElementById('modal-error-alert');
+    const modalErrorText = document.getElementById('modal-error-text');
+    const modalPreviewSection = document.getElementById('modal-preview-section');
+    const previewTableBody = document.getElementById('preview-table-body');
+    const importToast = document.getElementById('import-toast');
+    const importToastText = document.getElementById('import-toast-text');
+
+    if (importJsonTextarea) {
+      importJsonTextarea.placeholder = BLOG_JSON_TEMPLATE;
+    }
+
+    const showToastMsg = (msg: string) => {
+      if (!importToast || !importToastText) return;
+      importToastText.textContent = msg;
+      importToast.classList.remove('opacity-0', 'translate-y-12', 'pointer-events-none');
+      importToast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        importToast.classList.remove('opacity-100', 'translate-y-0');
+        importToast.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+      }, 3000);
+    };
+
+    const closeModal = () => {
+      importModal?.classList.add('hidden');
+      if (importJsonTextarea) importJsonTextarea.value = '';
+      modalErrorAlert?.classList.add('hidden');
+      modalPreviewSection?.classList.add('hidden');
+      if (modalConfirmBtn) {
+        modalConfirmBtn.disabled = true;
+        modalConfirmBtn.textContent = 'Confirm Import';
+      }
+    };
+
+    importJsonBtn?.addEventListener('click', () => {
+      importModal?.classList.remove('hidden');
+    });
+
+    modalCloseX?.addEventListener('click', closeModal);
+    modalCancelBtn?.addEventListener('click', closeModal);
+
+    let parsedPayload: any = null;
+
+    modalPreviewBtn?.addEventListener('click', () => {
+      if (!importJsonTextarea || !modalErrorAlert || !modalErrorText || !modalPreviewSection || !previewTableBody || !modalConfirmBtn) return;
+
+      const rawJson = importJsonTextarea.value.trim();
+      if (!rawJson) {
+        modalErrorText.textContent = 'Please paste a JSON payload first.';
+        modalErrorAlert.classList.remove('hidden');
+        modalPreviewSection.classList.add('hidden');
+        modalConfirmBtn.disabled = true;
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(rawJson);
+        const errors = validateBlogJSON(parsed);
+        if (errors.length > 0) {
+          modalErrorText.innerHTML = '<strong>Validation errors found:</strong><ul class="list-disc pl-4 mt-1">' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+          modalErrorAlert.classList.remove('hidden');
+          modalPreviewSection.classList.add('hidden');
+          modalConfirmBtn.disabled = true;
+          return;
+        }
+
+        modalErrorAlert.classList.add('hidden');
+        parsedPayload = parsed;
+
+        const fields = [
+          { key: 'title', value: parsed.title },
+          { key: 'slug', value: parsed.slug },
+          { key: 'category', value: parsed.category || 'Uncategorized' },
+          { key: 'excerpt', value: parsed.excerpt || '(Empty)' },
+          { key: 'tags', value: (parsed.tags || []).join(', ') || '(None)' },
+          { key: 'cover_image', value: parsed.cover_image || '(None)' },
+          { key: 'cover_image_alt', value: parsed.cover_image_alt || '(None)' },
+          { key: 'meta_title', value: parsed.meta_title || '(Empty)' },
+          { key: 'meta_description', value: parsed.meta_description || '(Empty)' },
+          { key: 'seo_title', value: parsed.seo_title || '(Empty)' },
+          { key: 'seo_description', value: parsed.seo_description || '(Empty)' },
+          { key: 'featured', value: parsed.featured ? 'Yes' : 'No' },
+          { key: 'published', value: parsed.published ? 'Yes' : 'No' },
+          { key: 'reading_time', value: parsed.reading_time || '5' },
+          { key: 'word_count', value: parsed.word_count || '(None)' },
+          { key: 'related_case_study_slug', value: parsed.related_case_study_slug || '(None)' }
+        ];
+
+        previewTableBody.innerHTML = fields.map(f => `
+          <tr class="border-b border-slate-850/45 hover:bg-slate-900/25">
+            <td class="px-4 py-2 font-semibold text-slate-450">${f.key}</td>
+            <td class="px-4 py-2 text-slate-200 truncate max-w-xs">${f.value}</td>
+          </tr>
+        `).join('');
+
+        modalPreviewSection.classList.remove('hidden');
+        modalConfirmBtn.disabled = false;
+      } catch (err: any) {
+        modalErrorText.textContent = 'Invalid JSON structure: ' + err.message;
+        modalErrorAlert.classList.remove('hidden');
+        modalPreviewSection.classList.add('hidden');
+        modalConfirmBtn.disabled = true;
+      }
+    });
+
+    modalConfirmBtn?.addEventListener('click', async () => {
+      if (!parsedPayload || !modalConfirmBtn || !modalErrorAlert || !modalErrorText) return;
+
+      modalConfirmBtn.disabled = true;
+      modalConfirmBtn.textContent = 'Importing...';
+
+      const now = new Date().toISOString();
+      const insertData = {
+        title: parsedPayload.title,
+        slug: parsedPayload.slug,
+        category: parsedPayload.category || 'Uncategorized',
+        excerpt: parsedPayload.excerpt || '',
+        content: parsedPayload.content,
+        tags: parsedPayload.tags || [],
+        cover_image: parsedPayload.cover_image || '',
+        cover_image_alt: parsedPayload.cover_image_alt || null,
+        meta_title: parsedPayload.meta_title || null,
+        meta_description: parsedPayload.meta_description || null,
+        seo_title: parsedPayload.seo_title || null,
+        seo_description: parsedPayload.seo_description || null,
+        faq_schema: parsedPayload.faq_schema || null,
+        featured: !!parsedPayload.featured,
+        published: !!parsedPayload.published,
+        reading_time: parsedPayload.reading_time !== undefined ? Number(parsedPayload.reading_time) : 5,
+        word_count: parsedPayload.word_count !== undefined ? Number(parsedPayload.word_count) : null,
+        related_case_study_slug: parsedPayload.related_case_study_slug || null,
+        author_name: "Haider Ali",
+        author_bio: "Haider Ali is an expert automation engineer specializing in building custom n8n pipelines, designing relational Supabase databases, training RAG-powered support chatbots, and building high-speed static websites for businesses across Pakistan and internationally.",
+        author_avatar: "/assets/images/resources/author-haider-ali.webp",
+        status: parsedPayload.published ? "published" : "draft",
+        updated_at: now,
+        last_modified: now,
+        published_at: parsedPayload.published ? now : null
+      };
+
+      try {
+        const { error } = await supabase
+          .from('blog_posts')
+          .insert([insertData]);
+
+        if (error) {
+          if (error.code === '23505' || (error.message && error.message.includes('unique constraint') && error.message.includes('slug'))) {
+            modalErrorText.textContent = 'Slug already exists, please change it';
+          } else {
+            modalErrorText.textContent = 'Import failed. Check console.';
+            console.error('Supabase error:', error);
+          }
+          modalErrorAlert.classList.remove('hidden');
+          modalConfirmBtn.disabled = false;
+          modalConfirmBtn.textContent = 'Confirm Import';
+        } else {
+          closeModal();
+          showToastMsg('Post imported successfully!');
+          if (insertData.published) {
+            await triggerDeploy();
+          }
+          await loadPosts();
+        }
+      } catch (err: any) {
+        modalErrorText.textContent = 'Unexpected error: ' + err.message;
+        modalErrorAlert.classList.remove('hidden');
+        modalConfirmBtn.disabled = false;
+        modalConfirmBtn.textContent = 'Confirm Import';
+      }
+    });
 
     // Load and render posts
     const loadPosts = async () => {

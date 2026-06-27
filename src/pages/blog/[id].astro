@@ -96,6 +96,32 @@ const { id } = Astro.params;
         </div>
       </div>
 
+      <!-- Row 3.5: Meta Title & Meta Description -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+          <label for="post-meta-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meta Title</label>
+          <input 
+            type="text" 
+            id="post-meta-title" 
+            placeholder="Enter Meta Title..." 
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+          />
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between items-center">
+            <label for="post-meta-desc" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meta Description</label>
+            <span id="meta-desc-counter" class="text-[9px] font-bold text-slate-400 font-mono">0/155</span>
+          </div>
+          <textarea 
+            id="post-meta-desc" 
+            rows="2"
+            maxlength="155"
+            placeholder="Enter Meta Description..." 
+            class="w-full p-3 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-sans"
+          ></textarea>
+        </div>
+      </div>
+
       <!-- Row 4: Tags & Cover Image URL -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-1">
@@ -116,6 +142,42 @@ const { id } = Astro.params;
             class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
           />
         </div>
+      </div>
+
+      <!-- Row 4.5: FAQ Schema & Featured -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 space-y-1">
+          <label for="post-faq" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">FAQ Schema (JSON Array)</label>
+          <textarea 
+            id="post-faq" 
+            rows="3" 
+            placeholder='[{"question":"...","answer":"..."}]' 
+            class="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50 font-mono"
+          ></textarea>
+          <p class="text-[10px] text-slate-400 font-light mt-0.5">Enter JSON array of FAQ objects</p>
+        </div>
+        <div class="flex items-center">
+          <div class="flex items-center gap-2 p-4 bg-slate-100/50 rounded-xl border border-slate-200/50 w-full select-none font-sans mt-3.5">
+            <input 
+              type="checkbox" 
+              id="post-featured" 
+              class="h-4 w-4 rounded text-emerald-600 border-slate-350 focus:ring-[#1D9E75]/25"
+            />
+            <label for="post-featured" class="text-xs font-bold text-slate-800 cursor-pointer">Featured Post</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4.8: Related Case Study Slug -->
+      <div class="space-y-1">
+        <label for="post-related-case-study" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Related Case Study Slug (optional)</label>
+        <input 
+          type="text" 
+          id="post-related-case-study" 
+          placeholder="agency-website-automation" 
+          class="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition bg-slate-50/50"
+        />
+        <p class="text-[10px] text-slate-450 font-light mt-0.5">Agar is blog post ka related case study/portfolio hai to uska slug yahan daalo. Ye end mein "Strategic Case Study" box mein dikhayega.</p>
       </div>
 
       <!-- Row 5: Excerpt -->
@@ -223,10 +285,16 @@ const { id } = Astro.params;
     const categoryInput = document.getElementById('post-category') as HTMLInputElement | null;
     const seoTitleInput = document.getElementById('post-seo-title') as HTMLInputElement | null;
     const seoDescInput = document.getElementById('post-seo-desc') as HTMLInputElement | null;
+    const metaTitleInput = document.getElementById('post-meta-title') as HTMLInputElement | null;
+    const metaDescInput = document.getElementById('post-meta-desc') as HTMLTextAreaElement | null;
+    const metaDescCounter = document.getElementById('meta-desc-counter');
+    const faqInput = document.getElementById('post-faq') as HTMLTextAreaElement | null;
+    const featuredInput = document.getElementById('post-featured') as HTMLInputElement | null;
     const tagsInput = document.getElementById('post-tags') as HTMLInputElement | null;
     const coverInput = document.getElementById('post-cover') as HTMLInputElement | null;
     const excerptInput = document.getElementById('post-excerpt') as HTMLTextAreaElement | null;
     const contentInput = document.getElementById('post-content') as HTMLTextAreaElement | null;
+    const relatedCaseStudyInput = document.getElementById('post-related-case-study') as HTMLInputElement | null;
 
     const previewToggle = document.getElementById('preview-toggle-btn');
     const container = document.getElementById('editor-preview-container');
@@ -240,6 +308,13 @@ const { id } = Astro.params;
     if (!root || !form || !titleInput || !slugInput || !contentInput || !draftBtn || !publishBtn || !container || !previewPanel || !loadingOverlay) return;
 
     const id = root.getAttribute('data-id') || '';
+
+    // Meta Description counter handler
+    metaDescInput?.addEventListener('input', () => {
+      if (metaDescCounter) {
+        metaDescCounter.textContent = `${metaDescInput.value.length}/155`;
+      }
+    });
 
     // 1. Fetch Existing Post Data
     const loadPostData = async () => {
@@ -260,10 +335,24 @@ const { id } = Astro.params;
       categoryInput.value = post.category || '';
       seoTitleInput.value = post.seo_title || '';
       seoDescInput.value = post.seo_description || '';
+      if (metaTitleInput) metaTitleInput.value = post.meta_title || '';
+      if (metaDescInput) {
+        metaDescInput.value = post.meta_description || '';
+        if (metaDescCounter) metaDescCounter.textContent = `${metaDescInput.value.length}/155`;
+      }
+      if (faqInput) {
+        faqInput.value = post.faq_schema ? JSON.stringify(post.faq_schema, null, 2) : '';
+      }
+      if (featuredInput) {
+        featuredInput.checked = !!post.featured;
+      }
       tagsInput.value = (post.tags || []).join(', ');
       coverInput.value = post.cover_image || '';
       excerptInput.value = post.excerpt || '';
       contentInput.value = post.content || '';
+      if (relatedCaseStudyInput) {
+        relatedCaseStudyInput.value = post.related_case_study_slug || '';
+      }
 
       // Reveal form
       loadingOverlay.classList.add('hidden');
@@ -358,18 +447,45 @@ const { id } = Astro.params;
         .map(t => t.trim())
         .filter(Boolean);
 
-      const payload = {
+      // Validate FAQ Schema JSON
+      let faq_schema = null;
+      let isValidFaq = true;
+      const faqVal = faqInput?.value.trim() || '';
+      if (faqVal) {
+        try {
+          faq_schema = JSON.parse(faqVal);
+        } catch (err: any) {
+          isValidFaq = false;
+          if (!silent) {
+            alert('Invalid JSON in FAQ Schema: ' + err.message);
+            isSaving = false;
+            draftBtn.disabled = false;
+            publishBtn.disabled = false;
+            return;
+          }
+        }
+      }
+
+      const payload: any = {
         title,
         slug,
         category: categoryInput?.value.trim() || 'Uncategorized',
         seo_title: seoTitleInput?.value.trim() || title,
         seo_description: seoDescInput?.value.trim() || excerptInput?.value.trim() || '',
+        meta_title: metaTitleInput?.value.trim() || null,
+        meta_description: metaDescInput?.value.trim() || null,
+        featured: featuredInput ? featuredInput.checked : false,
         tags,
         cover_image: coverInput?.value.trim() || '',
         excerpt: excerptInput?.value.trim() || '',
         content: contentInput.value,
         published: publishState,
+        related_case_study_slug: relatedCaseStudyInput?.value.trim() || null,
       };
+
+      if (isValidFaq) {
+        payload.faq_schema = faq_schema;
+      }
 
       try {
         const { error } = await saveBlog(payload, id);
@@ -391,7 +507,7 @@ const { id } = Astro.params;
             autosaveIndicator.textContent = `Auto-saved at ${now}`;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to save post:', err);
         if (!silent) {
           alert('Failed to save: ' + err.message);
